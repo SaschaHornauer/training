@@ -47,6 +47,7 @@ def main():
     rate_counter = Utils.RateCounter()
 
     def run_net(data_index):
+        print(data_index)
         batch.fill(data, data_index)  # Get batches ready
         batch.forward(optimizer, criterion, data_moment_loss_record)
 
