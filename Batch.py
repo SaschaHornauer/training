@@ -20,11 +20,13 @@ class Batch:
         self.names = []
         self.outputs = None
         self.loss = None
+        self.metadata_index = None
 
     def __init__(self, net):
         self.net = net
         self.camera_data = None
         self.metadata = None
+        self.metadata_index = None
         self.target_data = None
         self.names = None
         self.outputs = None
@@ -98,11 +100,13 @@ class Batch:
             if cur_label == 'caffe':
                 if data['states'][0]:
                     metadata[metadata_count, :, :] = 1.
+                    self.metadata_index = metadata_count
                 else:
                     metadata[metadata_count, :, :] = 0.
             else:
                 if data['labels'][cur_label]:
                     metadata[metadata_count, :, :] = 1.
+                    self.metadata_index = metadata_count
                 else:
                     metadata[metadata_count, :, :] = 0.
             metadata_count -= 1
@@ -126,7 +130,8 @@ class Batch:
     def forward(self, optimizer, criterion, data_moment_loss_record):
         optimizer.zero_grad()
         self.outputs = self.net(Variable(self.camera_data),
-                                Variable(self.metadata)).cuda()
+                                Variable(self.metadata),
+                                self.metadata_index).cuda()
         self.outputs = self.outputs.chunk(2, 1)[0]
         self.loss = criterion(self.outputs, Variable(self.target_data))
 

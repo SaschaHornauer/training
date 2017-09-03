@@ -1,5 +1,6 @@
 """Training and validation code for bddmodelcar."""
 import sys
+import os
 import traceback
 import logging
 
@@ -10,11 +11,12 @@ import Utils
 
 import matplotlib.pyplot as plt
 
-from nets.SqueezeNet import SqueezeNet
+from nets.SqueezeNetSupervisor import SqueezeNetSupervisor
 import torch
 
 
 def main():
+
     logging.basicConfig(filename='training.log', level=logging.DEBUG)
     logging.debug(ARGS)  # Log arguments
 
@@ -23,7 +25,9 @@ def main():
     torch.cuda.set_device(ARGS.gpu)
     torch.cuda.device(ARGS.gpu)
 
-    net = SqueezeNet().cuda()
+    import os
+    save_data = torch.load(os.path.join(ARGS.save_path, "epoch10.weights"))
+    net = SqueezeNetSupervisor(save_data).cuda()
     criterion = torch.nn.MSELoss().cuda()
     optimizer = torch.optim.Adadelta(net.parameters())
 

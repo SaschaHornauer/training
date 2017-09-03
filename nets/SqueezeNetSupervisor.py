@@ -70,8 +70,20 @@ class PostMetaSqueeze(nn.Module):
 
 class SqueezeNetSupervisor(nn.Module):
 
-    def __init__(self):
+    '''
+    :param subnet_dicts: a list of subnet module dictionaries
+    '''
+    def __init__(self, load_dict):
         super(SqueezeNetSupervisor, self).__init__()
+
+        if "post_metadata_features" not in load_dict or "final_conv" not in load_dict or "final_output" not in load_dict:
+            raise Exception("One or more subnets does not contain the required modules")
+
+        load_dict = {
+            "post_metadata_features": load_dict["post_metadata_features"],
+            "final_conv": load_dict["final_conv"],
+            "post_meta_output": load_dict["final_output"]
+        }
 
         self.N_STEPS = 10
         self.metadata_class_count = 6
@@ -84,9 +96,13 @@ class SqueezeNetSupervisor(nn.Module):
             Fire(128, 16, 64, 64),
             nn.MaxPool2d(kernel_size=3, stride=2, ceil_mode=True),
         )
-        self.post_metadata_squeeze = nn.ModuleList([
-            PostMetaSqueeze(self.N_STEPS) for _ in range(self.metadata_class_count)
-        ])
+
+        # Load the post-metadata squeezenet and freeze it
+        self.post_metadata_squeeze = PostMetaSqueeze(self.N_STEPS)
+        self.post_metadata_squeeze.load_state_dict(load_dict)
+        for parameter in self.post_metadata_squeeze.parameters():
+            parameter.requires_grad = False
+
         self.supervisor_lstm = nn.LSTM(5 * self.metadata_class_count, 4, num_layers=1, batch_first=True)
 
         for m in self.modules():
@@ -95,10 +111,14 @@ class SqueezeNetSupervisor(nn.Module):
                 if m.bias is not None:
                     m.bias.data.zero_()
 
+    def train(self, mode=True):
+        super(SqueezeNetSupervisor, self).train(mode)
+        self.post_meta_squeeze.eval()
+
     def forward(self, x, metadata, metadata_index):
         x = self.pre_metadata_features(x)
         x = [torch.cat((x, self.create_metadata(metadata.size(), i)), 1) for i in range(self.metadata_class_count)]
-        x = [self.post_metadata_squeeze[i](x[i]) for i in range(self.metadata_class_count)]
+        x = [self.post_metadata_squeeze(x[i]) for i in range(self.metadata_class_count)]
         lstm_append = self.create_metadata((x[0].size(0), self.N_STEPS, self.metadata_class_count), metadata_index, 2)
         x = torch.cat(x + [lstm_append], 2)
         x = self.supervisor_lstm(x)[0]
@@ -119,8 +139,7 @@ class SqueezeNetSupervisor(nn.Module):
 
 
 def unit_test():
-    test_net = SqueezeNetSupervisor()
-    # print test_net.create_metadata(Variable(torch.randn(5, 6, 11, 20)), 0)
+    test_net = SqueezeNetSupervisor({})
     a = test_net(Variable(torch.randn(5, 14, 94, 168)),
                  Variable(torch.randn(5, 6, 11, 20)), 1)
     logging.debug('Net Test Output = {}'.format(a))
