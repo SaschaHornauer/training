@@ -27,7 +27,9 @@ def main():
 
     import os
     save_data = torch.load(os.path.join(ARGS.save_path, "epoch10.weights"))
-    net = SqueezeNetSupervisor(save_data).cuda()
+    net = SqueezeNetSupervisor()
+    net.load_subnet(save_data)
+    net = net.cuda()
     criterion = torch.nn.MSELoss().cuda()
     optimizer = torch.optim.Adadelta(net.parameters())
 

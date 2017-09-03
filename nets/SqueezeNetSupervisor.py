@@ -73,17 +73,8 @@ class SqueezeNetSupervisor(nn.Module):
     '''
     :param subnet_dicts: a list of subnet module dictionaries
     '''
-    def __init__(self, load_dict):
+    def __init__(self):
         super(SqueezeNetSupervisor, self).__init__()
-
-        if "post_metadata_features" not in load_dict or "final_conv" not in load_dict or "final_output" not in load_dict:
-            raise Exception("One or more subnets does not contain the required modules")
-
-        load_dict = {
-            "post_metadata_features": load_dict["post_metadata_features"],
-            "final_conv": load_dict["final_conv"],
-            "post_meta_output": load_dict["final_output"]
-        }
 
         self.N_STEPS = 10
         self.metadata_class_count = 6
@@ -97,9 +88,7 @@ class SqueezeNetSupervisor(nn.Module):
             nn.MaxPool2d(kernel_size=3, stride=2, ceil_mode=True),
         )
 
-        # Load the post-metadata squeezenet and freeze it
         self.post_metadata_squeeze = PostMetaSqueeze(self.N_STEPS)
-        self.post_metadata_squeeze.load_state_dict(load_dict)
         for parameter in self.post_metadata_squeeze.parameters():
             parameter.requires_grad = False
 
@@ -137,9 +126,22 @@ class SqueezeNetSupervisor(nn.Module):
             metadata = torch.cat((metadata, torch.zeros(pre_meta_dims + [dims[meta_dimension] - metadata_index - 1] + post_meta_dims)), meta_dimension)
         return metadata
 
+    def load_subnet(self, load_dict):
+        if "post_metadata_features" not in load_dict or "final_conv" not in load_dict or "final_output" not in load_dict:
+            raise Exception("One or more subnets does not contain the required modules")
+
+        load_dict = {
+            "post_metadata_features": load_dict["post_metadata_features"],
+            "final_conv": load_dict["final_conv"],
+            "post_meta_output": load_dict["final_output"]
+        }
+
+        self.post_metadata_squeeze.load_state_dict(load_dict)
+        for parameter in self.post_metadata_squeeze.parameters():
+            parameter.requires_grad = False
 
 def unit_test():
-    test_net = SqueezeNetSupervisor({})
+    test_net = SqueezeNetSupervisor()
     a = test_net(Variable(torch.randn(5, 14, 94, 168)),
                  Variable(torch.randn(5, 6, 11, 20)), 1)
     logging.debug('Net Test Output = {}'.format(a))
