@@ -65,9 +65,11 @@ class SqueezeNetLSTM(nn.Module):  # pylint: disable=too-few-public-methods
         self.pre_lstm_output = nn.Sequential(
             nn.Dropout(p=0.5),
             final_conv,
-            nn.AvgPool2d(kernel_size=3, stride=2),
+            nn.AvgPool2d(kernel_size=3, stride=1),
         )
-        self.lstm = nn.LSTM(16, 2, 8, batch_first=True)
+        self.lstm = nn.LSTM(32, 32, 4, batch_first=True)
+        self.compress_lstm = nn.LSTM(32, 8, 2, batch_first=True)
+        self.final_lstm = nn.LSTM(8, 2, 2, batch_first=True)
 
         for mod in self.modules():
             if isinstance(mod, nn.Conv2d):
@@ -86,6 +88,8 @@ class SqueezeNetLSTM(nn.Module):  # pylint: disable=too-few-public-methods
         net_output = self.pre_lstm_output(net_output)
         net_output = net_output.view(net_output.size(0), self.n_steps, -1)
         net_output = self.lstm(net_output)[0]
+        net_output = self.compress_lstm(net_output)[0]
+        net_output = self.final_lstm(net_output)[0]
         net_output = net_output.contiguous().view(net_output.size(0), -1)
         return net_output
 
