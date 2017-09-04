@@ -145,7 +145,7 @@ class Batch:
 
     def backward(self, optimizer):
         self.loss.backward()
-        nnutils.clip_grad_norm(self.net.parameters(), 1.0)
+        nnutils.clip_grad_norm(filter(lambda p: p.requires_grad, self.net.parameters()), 1.0)
         optimizer.step()
 
     def display(self):

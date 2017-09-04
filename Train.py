@@ -26,12 +26,13 @@ def main():
     torch.cuda.device(ARGS.gpu)
 
     import os
+    print(os.path.join(ARGS.save_path, "epoch10.weights"))
     save_data = torch.load(os.path.join(ARGS.save_path, "epoch10.weights"))
     net = SqueezeNetSupervisor()
     net.load_subnet(save_data)
     net = net.cuda()
     criterion = torch.nn.MSELoss().cuda()
-    optimizer = torch.optim.Adadelta(net.parameters())
+    optimizer = torch.optim.Adadelta(filter(lambda p: p.requires_grad, net.parameters()))
 
     data = None
     batch = Batch.Batch(net)
