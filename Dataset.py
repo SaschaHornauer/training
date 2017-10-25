@@ -193,8 +193,25 @@ class Dataset(data.Dataset):
     def get_train_loader(self, p_subsample=None, seed=None, *args, **kwargs):
         random.seed(seed)
         remove_train, train_part = set(), set(self.train_part or self.get_train_partition())
+        control_bins = [[0 for __ in range(0, 4)] for _ in range(0, 4)]
+        print 'starting binning'
+        _ = 0
         for i in train_part:
-            if random.random() > p_subsample:
+            run_idx, t = self.create_map(i)
+            steer = float(self.run_files[run_idx]['metadata']['steer'][t]) // 25
+            motor = float(self.run_files[run_idx]['metadata']['motor'][t]) // 25
+            control_bins[steer][motor] += 1
+            if _ % 100000 == 0:
+                print(_ + ' binned')
+            _ += 1
+        num_points = sum([sum(c) for c in control_bins])
+        min_num = min([min([c2 for c2 in c if c2 > 1000]) for c in control_bins if c > 1000])
+        control_probs = [[min_num / c for c in _] for _ in control_bins]
+        print 'ending binning'
+        for i in train_part:
+            steer = float(self.run_files[run_idx]['metadata']['steer'][t]) // 25
+            motor = float(self.run_files[run_idx]['metadata']['motor'][t]) // 25
+            if random.random() > p_subsample * (num_points / (8 * min_num) * control_probs[steer][motor]):
                 remove_train.add(i)
         for i in remove_train:
             train_part.remove(i)
