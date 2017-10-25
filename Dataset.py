@@ -227,12 +227,15 @@ class Dataset(data.Dataset):
                 self.train_class_probs = [[self.min_cache_points / (c + 1e-32) for c in _] for _ in control_bins]
                 print 'ending binning'
                 json.dump([self.train_class_probs, self.controls, self.num_cache_points, self.min_cache_points], open(self.cache_file, 'w'))
-
+        _ = 0
         for i in train_part:
             run_idx, t = self.create_map(i)
             steer, motor = self.controls[str(i)][0], self.controls[str(i)][1]
             if random.random() > p_subsample * (self.num_cache_points / (8 * self.min_cache_points) * self.train_class_probs[steer][motor]):
                 remove_train.add(i)
+            if _ % 100000 == 0:
+                print ('Trimming ' + str(_))
+            _ += 1
         for i in remove_train:
             train_part.remove(i)
 
