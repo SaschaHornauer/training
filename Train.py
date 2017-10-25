@@ -97,7 +97,7 @@ def main():
                                     separate_frames=config['model']['separate_frames'],
                                     metadata_shape=config['model']['metadata_shape'],
                                     p_exclude_run=config['training']['p_exclude_run'],
-                                    cache_file=config['training']['partition_cache']
+                                    cache_file=('partition_cache' in config['training'] and config['training']['partition_cache'])
                                                or config['model']['save_path'] + config['model']['name'] + '.cache')
 
             train_data_loader = train_dataset.get_train_loader(batch_size=config['training']['dataset']['batch_size'],
