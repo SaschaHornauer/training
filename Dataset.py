@@ -208,7 +208,8 @@ class Dataset(data.Dataset):
             try:
                 js = json.load(open(self.cache_file, 'r'))
                 self.train_class_probs, self.controls, self.num_cache_points, self.min_cache_points = js[0], js[1], js[2], js[3]
-            except:
+            except Exception as e:
+                print(e)
                 print(self.cache_file)
                 print 'starting binning'
                 _ = 0
@@ -229,7 +230,7 @@ class Dataset(data.Dataset):
 
         for i in train_part:
             run_idx, t = self.create_map(i)
-            steer, motor = self.controls[i][0], self.controls[i][1]
+            steer, motor = self.controls[str(i)][0], self.controls[str(i)][1]
             if random.random() > p_subsample * (self.num_cache_points / (8 * self.min_cache_points) * self.train_class_probs[steer][motor]):
                 remove_train.add(i)
         for i in remove_train:
