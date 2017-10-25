@@ -214,13 +214,14 @@ class Dataset(data.Dataset):
                     run_idx, t = self.create_map(i)
                     steer = int(float(self.run_files[run_idx]['metadata']['steer'][t]) / 25)
                     motor = int(float(self.run_files[run_idx]['metadata']['motor'][t]) / 25)
+                    print(steer, motor)
                     control_bins[steer][motor] += 1
                     if _ % 10000 == 0:
                         print(str(_) + ' binned')
                     _ += 1
                 self.num_cache_points = sum([sum(c) for c in control_bins])
                 self.min_cache_points = min([min([c2 for c2 in c if c2 > 1000]) for c in control_bins if c > 1000])
-                self.train_class_probs = [[self.num_cache_points / c for c in _] for _ in control_bins]
+                self.train_class_probs = [[self.num_cache_points / (c + 1e-32) for c in _] for _ in control_bins]
                 print 'ending binning'
                 json.dump(self.train_class_probs, open(self.cache_file, 'w'))
 
