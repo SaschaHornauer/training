@@ -5,6 +5,7 @@ import logging
 import time
 import os
 import importlib
+import numpy as np
 
 from Config import config
 from Dataset import Dataset
@@ -37,8 +38,8 @@ def iterate(net, loss_func, optimizer=None, input=None, truth=None, train=True):
     input = tuple([Variable(tensor) for tensor in input])
     outputs = net(*input).cuda()
     print('------------------')
-    print(outputs[0])
-    print(truth[0])
+    print([int(i * 1000) / 1000. for i in np.ndarray.tolist(outputs[0].data.view(-1).numpy())])
+    print([int(i * 1000) / 1000. for i in np.ndarray.tolist(truth[0].data.view(-1).numpy())])
     loss = loss_func(outputs, Variable(truth))
 
     if not train:
