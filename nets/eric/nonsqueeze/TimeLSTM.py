@@ -110,7 +110,6 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
                 last_hidden_cell = None
             else:
                 net_output = lstm(net_output)[0]
-        print(net_output)
         return net_output
 
     def get_decoder_seq(self, batch_size, timesteps):
