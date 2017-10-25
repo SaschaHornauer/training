@@ -198,8 +198,8 @@ class Dataset(data.Dataset):
         _ = 0
         for i in train_part:
             run_idx, t = self.create_map(i)
-            steer = float(self.run_files[run_idx]['metadata']['steer'][t]) // 25
-            motor = float(self.run_files[run_idx]['metadata']['motor'][t]) // 25
+            steer = int(float(self.run_files[run_idx]['metadata']['steer'][t]) / 25)
+            motor = int(float(self.run_files[run_idx]['metadata']['motor'][t]) / 25)
             control_bins[steer][motor] += 1
             if _ % 100000 == 0:
                 print(_ + ' binned')
