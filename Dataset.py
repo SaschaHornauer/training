@@ -207,7 +207,7 @@ class Dataset(data.Dataset):
         elif self.cache_file:
             try:
                 js = json.load(open(self.cache_file, 'r'))
-                self.train_class_probs, self.controls = js[0], js[1]
+                self.train_class_probs, self.controls, self.num_cache_points, self.min_cache_points = js[0], js[1], js[2], js[3]
             except:
                 print(self.cache_file)
                 print 'starting binning'
@@ -216,20 +216,20 @@ class Dataset(data.Dataset):
                     run_idx, t = self.create_map(i)
                     steer = int(float(self.run_files[run_idx]['metadata']['steer'][t]) / 25)
                     motor = int(float(self.run_files[run_idx]['metadata']['motor'][t]) / 25)
-                    self.controls[i] = (steer, motor)
+                    self.controls[str(i)] = (steer, motor)
                     control_bins[steer][motor] += 1
                     if _ % 10000 == 0:
                         print(str(_) + ' binned')
                     _ += 1
                 self.num_cache_points = sum([sum(c) for c in control_bins])
                 self.min_cache_points = min([min([c2 for c2 in c if c2 > 1000]) for c in control_bins if c > 1000])
-                self.train_class_probs = [[self.num_cache_points / (c + 1e-32) for c in _] for _ in control_bins]
+                self.train_class_probs = [[self.min_cache_points / (c + 1e-32) for c in _] for _ in control_bins]
                 print 'ending binning'
-                json.dump([self.train_class_probs, self.controls], open(self.cache_file, 'w'))
+                json.dump([self.train_class_probs, self.controls, self.num_cache_points, self.min_cache_points], open(self.cache_file, 'w'))
 
         for i in train_part:
             run_idx, t = self.create_map(i)
-            steer, motor = self.controls[0][i], self.controls[1][i]
+            steer, motor = self.controls[i][0], self.controls[i][1]
             if random.random() > p_subsample * (self.num_cache_points / (8 * self.min_cache_points) * self.train_class_probs[steer][motor]):
                 remove_train.add(i)
         for i in remove_train:
