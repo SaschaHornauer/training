@@ -3,6 +3,7 @@ import time
 import h5py
 import torch
 import torch.utils.data as data
+import json
 import sys
 from random import shuffle
 import os
@@ -16,7 +17,7 @@ class Dataset(data.Dataset):
 
     def __init__(self, data_folder_dir, require_one=[], ignore_list=[], stride=10, max_len=-1,
                  train_ratio=0.9, seed=None, nframes=2, nsteps=10, separate_frames=False,
-                 metadata_shape=[], p_exclude_run=0.):
+                 metadata_shape=[], p_exclude_run=0., cache_file=None):
         self.max_len = max_len
         self.runs = os.walk(os.path.join(data_folder_dir, 'processed_h5py'), followlinks=True).next()[1]
         self.run_files = []
@@ -118,6 +119,11 @@ class Dataset(data.Dataset):
         self.seed = seed or self.total_length
         self.subsampled_train_part = None
 
+        self.train_class_probs = None
+        self.cache_file = cache_file
+        self.num_cache_points = None
+        self.min_cache_points = None
+
     def __getitem__(self, index):
         run_idx, t = self.create_map(index)
 
@@ -194,24 +200,34 @@ class Dataset(data.Dataset):
         random.seed(seed)
         remove_train, train_part = set(), set(self.train_part or self.get_train_partition())
         control_bins = [[0 for __ in range(0, 4)] for _ in range(0, 4)]
-        print 'starting binning'
-        _ = 0
+
+        if self.train_class_probs:
+            pass
+        elif self.cache_file:
+            try:
+                self.train_class_probs = json.load(open(self.cache_file, 'r'))
+            except:
+                print 'starting binning'
+                _ = 0
+                for i in train_part:
+                    run_idx, t = self.create_map(i)
+                    steer = int(float(self.run_files[run_idx]['metadata']['steer'][t]) / 25)
+                    motor = int(float(self.run_files[run_idx]['metadata']['motor'][t]) / 25)
+                    control_bins[steer][motor] += 1
+                    if _ % 10000 == 0:
+                        print(str(_) + ' binned')
+                    _ += 1
+                self.num_cache_points = sum([sum(c) for c in control_bins])
+                self.min_cache_points = min([min([c2 for c2 in c if c2 > 1000]) for c in control_bins if c > 1000])
+                self.train_class_probs = [[self.num_cache_points / c for c in _] for _ in control_bins]
+                print 'ending binning'
+                json.dump(self.train_class_probs, open(self.cache_file, 'r'))
+
         for i in train_part:
             run_idx, t = self.create_map(i)
             steer = int(float(self.run_files[run_idx]['metadata']['steer'][t]) / 25)
             motor = int(float(self.run_files[run_idx]['metadata']['motor'][t]) / 25)
-            control_bins[steer][motor] += 1
-            if _ % 100000 == 0:
-                print(str(_) + ' binned')
-            _ += 1
-        num_points = sum([sum(c) for c in control_bins])
-        min_num = min([min([c2 for c2 in c if c2 > 1000]) for c in control_bins if c > 1000])
-        control_probs = [[min_num / c for c in _] for _ in control_bins]
-        print 'ending binning'
-        for i in train_part:
-            steer = float(self.run_files[run_idx]['metadata']['steer'][t]) // 25
-            motor = float(self.run_files[run_idx]['metadata']['motor'][t]) // 25
-            if random.random() > p_subsample * (num_points / (8 * min_num) * control_probs[steer][motor]):
+            if random.random() > p_subsample * (self.num_cache_points / (8 * self.min_cache_points) * self.train_class_probs[steer][motor]):
                 remove_train.add(i)
         for i in remove_train:
             train_part.remove(i)

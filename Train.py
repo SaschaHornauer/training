@@ -66,6 +66,8 @@ def main():
                     torch.nn.MSELoss().cuda()
 
     # Iterate over all epochs
+
+
     for epoch in range(config['training']['start_epoch'], config['training']['num_epochs']):
         try:
             torch.cuda.set_device(config['hardware']['gpu'])
@@ -91,7 +93,8 @@ def main():
                                     train_ratio=config['training']['dataset']['train_ratio'],
                                     separate_frames=config['model']['separate_frames'],
                                     metadata_shape=config['model']['metadata_shape'],
-                                    p_exclude_run=config['training']['p_exclude_run'])
+                                    p_exclude_run=config['training']['p_exclude_run'],
+                                    cache_file=config['model']['save_path'] + config['model']['name'] + '.cache')
 
             train_data_loader = train_dataset.get_train_loader(batch_size=config['training']['dataset']['batch_size'],
                                                                shuffle=config['training']['dataset']['shuffle'],
@@ -127,15 +130,15 @@ def main():
             logging.debug('Starting validation epoch #{}'.format(epoch))
 
             val_dataset = Dataset(config['validation']['dataset']['path'],
-                                    require_one=config['dataset']['include_labels'],
-                                    ignore_list=config['dataset']['ignore_labels'],
-                                    stride=config['model']['frame_stride'],
-                                    seed=config['validation']['rand_seed'],
-                                    nframes=config['model']['past_frames'],
-                                    train_ratio=config['validation']['dataset']['train_ratio'],
-                                    nsteps=config['model']['future_frames'],
-                                    separate_frames=config['model']['separate_frames'],
-                                    metadata_shape=config['model']['metadata_shape'])
+                                  require_one=config['dataset']['include_labels'],
+                                  ignore_list=config['dataset']['ignore_labels'],
+                                  stride=config['model']['frame_stride'],
+                                  seed=config['validation']['rand_seed'],
+                                  nframes=config['model']['past_frames'],
+                                  train_ratio=config['validation']['dataset']['train_ratio'],
+                                  nsteps=config['model']['future_frames'],
+                                  separate_frames=config['model']['separate_frames'],
+                                  metadata_shape=config['model']['metadata_shape'])
 
             val_data_loader = val_dataset.get_val_loader(batch_size=config['validation']['dataset']['batch_size'],
                                                                shuffle=config['validation']['dataset']['shuffle'],
