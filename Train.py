@@ -36,6 +36,9 @@ def iterate(net, loss_func, optimizer=None, input=None, truth=None, train=True):
     # Transform inputs into Variables for pytorch and run forward prop
     input = tuple([Variable(tensor) for tensor in input])
     outputs = net(*input).cuda()
+    print('------------------')
+    print(outputs[0])
+    print(truth[0])
     loss = loss_func(outputs, Variable(truth))
 
     if not train:
