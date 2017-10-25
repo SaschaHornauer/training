@@ -29,7 +29,7 @@ class Feedforward(nn.Module):
             nn.Conv2d(16, 24, kernel_size=3, padding=1),
             nn.Conv2d(24, 24, kernel_size=3, padding=1)
         )
-        final_conv = nn.Conv2d(24, self.n_steps * 2, kernel_size=1)
+        final_conv = nn.Conv2d(24, self.n_steps, kernel_size=1)
         self.final_output = nn.Sequential(
             nn.Dropout(p=0.5),
             final_conv,
@@ -51,7 +51,7 @@ class Feedforward(nn.Module):
         x = torch.cat((x, metadata), 1)
         x = self.post_metadata_features(x)
         x = self.final_output(x)
-        x = x.view(x.size(0), -1)
+        x = x.view(x.size(0), -1, 2)
         return x
 
     def num_params(self):
@@ -59,8 +59,10 @@ class Feedforward(nn.Module):
 
 def unit_test():
     test_net = Feedforward(20, 6)
-    a = test_net(Variable(torch.randn(5, 36, 94, 168)),
-                 Variable(torch.randn(5, 8, 23, 41)))
+    a = test_net(Variable(torch.randn(1, 36, 94, 168)),
+                 Variable(torch.randn(1, 8, 23, 41)))
+    sizes = [1, 20, 2]
+    assert(all(a.size(i) == sizes[i] for i in range(len(sizes))))
     logging.debug('Net Test Output = {}'.format(a))
     logging.debug('Network was Unit Tested')
     print(test_net.num_params())

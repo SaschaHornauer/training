@@ -24,7 +24,7 @@ class NvidiaMetadata(nn.Module):
         )
         self.fcl = nn.Sequential(
             nn.Linear(768, 100),
-            nn.Linear(100, 4 * self.n_steps)
+            nn.Linear(100, 2 * self.n_steps)
         )
 
 
@@ -34,7 +34,7 @@ class NvidiaMetadata(nn.Module):
         x = self.post_metadata(x)
         x = x.view(x.size(0), -1)
         x = self.fcl(x)
-        x = x.view(x.size(0), -1, 4)
+        x = x.view(x.size(0), -1, 2)
         return x
 
     def num_params(self):
@@ -42,8 +42,10 @@ class NvidiaMetadata(nn.Module):
 
 def unit_test():
     test_net = NvidiaMetadata(20, 6)
-    a = test_net(Variable(torch.randn(5, 36, 94, 168)),
-                 Variable(torch.randn(5, 12, 21, 39)))
+    a = test_net(Variable(torch.randn(1, 36, 94, 168)),
+                 Variable(torch.randn(1, 12, 21, 39)))
+    sizes = [1, 20, 2]
+    assert(all(a.size(i) == sizes[i] for i in range(len(sizes))))
     logging.debug('Net Test Output = {}'.format(a))
     logging.debug('Network was Unit Tested')
     print(test_net.num_params())

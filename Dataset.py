@@ -148,22 +148,15 @@ class Dataset(data.Dataset):
                 metadata[label_idx, :, :] = int(cur_label in metadata_raw and metadata_raw[cur_label][0])
 
         # Get Ground Truth
-        steer = []
-        motor = []
+        controls = []
 
         for i in range(0, self.stride * self.nsteps, self.stride):
-            steer.append(float(self.run_files[run_idx]['metadata']['steer'][t + i]))
-        for i in range(0, self.stride * self.nsteps, self.stride):
-            motor.append(float(self.run_files[run_idx]['metadata']['motor'][t + i]))
-        for i in range(0, self.stride * self.nsteps * 2, self.stride):
-            motor.append(0.)
+            controls.append([float(self.run_files[run_idx]['metadata']['steer'][t + i]),
+                             float(self.run_files[run_idx]['metadata']['motor'][t + i])])
 
-        final_ground_truth = torch.FloatTensor(steer + motor) / 99.
+        final_ground_truth = torch.FloatTensor(controls) / 99.
 
-        mask = torch.FloatTensor([1] * (2 * self.nsteps) + # use all data
-                                [0] * (2 * self.nsteps)) # no mask
-
-        return camera_data, metadata, final_ground_truth, mask
+        return camera_data, metadata, final_ground_truth
 
     def __len__(self):
         if self.max_len == -1:
@@ -226,7 +219,7 @@ if __name__ == '__main__':
                                                     batch_size=500,
                                                     shuffle=False, pin_memory=False)
     start = time.time()
-    for cam, meta, truth, mask in train_data_loader:
+    for cam, meta, truth in train_data_loader:
         cur = time.time()
         print(500./(cur - start))
         start = cur

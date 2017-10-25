@@ -46,7 +46,8 @@
     "future_frames": 10,
     "frame_stride": 10,
     "separate_frames": false,
-    "metadata_shape": [128, 23, 41]
+    "metadata_shape": [128, 23, 41],
+    "load_epoch": 0
   },
 
   "dataset": {

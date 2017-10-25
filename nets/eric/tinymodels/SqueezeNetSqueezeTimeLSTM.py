@@ -79,7 +79,7 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
             nn.LSTM(1, 32, 1, batch_first=True),
             nn.LSTM(32, 8, 1, batch_first=True),
             nn.LSTM(8, 16, 1, batch_first=True),
-            nn.LSTM(16, 4, 1, batch_first=True),
+            nn.LSTM(16, 2, 1, batch_first=True),
         ])
 
         for mod in self.modules():
@@ -113,7 +113,6 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
                 last_hidden_cell = None
             else:
                 net_output = lstm(net_output)[0]
-        net_output = net_output.contiguous().view(net_output.size(0), -1)
         return net_output
 
     def get_decoder_seq(self, batch_size, timesteps):
@@ -131,8 +130,10 @@ def unit_test():
     """Tests SqueezeNetTimeLSTM for size constitency"""
     test_net = SqueezeNetTimeLSTM(6, 20)
     test_net_output = test_net(
-        Variable(torch.randn(5, 36, 94, 168)),
-        Variable(torch.randn(5, 8, 6, 23, 41)))
+        Variable(torch.randn(1, 36, 94, 168)),
+        Variable(torch.randn(1, 8, 6, 23, 41)))
+    sizes = [1, 20, 2]
+    assert(all(test_net_output.size(i) == sizes[i] for i in range(len(sizes))))
     logging.debug('Net Test Output = {}'.format(test_net_output))
     logging.debug('Network was Unit Tested')
     print(test_net.num_params())

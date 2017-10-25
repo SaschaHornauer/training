@@ -16,7 +16,7 @@ import torch.nn.utils as nnutils
 import torch
 Net = importlib.import_module(config['model']['py_path']).Net
 
-def iterate(net, loss_func, optimizer=None, input=None, truth=None, mask=None, train=True):
+def iterate(net, loss_func, optimizer=None, input=None, truth=None, train=True):
     """
     Encapsulates a training or validation iteration.
 
@@ -24,8 +24,7 @@ def iterate(net, loss_func, optimizer=None, input=None, truth=None, mask=None, t
     :param optimizer: <torch.optim>: optimizer to use
     :param input: <tuple>: tuple of np.array or tensors to pass into net. Should contain data for this iteration
     :param truth: <np.array | tensor>: tuple of np.array to pass into optimizer. Should contain data for this iteration
-    :param mask: <np.array | tensor>: mask to ignore unnecessary outputs.
-    :return: loss
+\    :return: loss
     """
 
     if train:
@@ -36,7 +35,7 @@ def iterate(net, loss_func, optimizer=None, input=None, truth=None, mask=None, t
 
     # Transform inputs into Variables for pytorch and run forward prop
     input = tuple([Variable(tensor) for tensor in input])
-    outputs = net(*input).cuda() * Variable(mask)
+    outputs = net(*input).cuda()
     loss = loss_func(outputs, Variable(truth))
 
     if not train:
@@ -103,13 +102,12 @@ def main():
             train_loss = Utils.LossLog()
             start = time.time()
 
-            for batch_idx, (camera, meta, truth, mask) in enumerate(train_data_loader):
+            for batch_idx, (camera, meta, truth) in enumerate(train_data_loader):
                 # Cuda everything
-                camera, meta, truth, mask = camera.cuda(), meta.cuda(), truth.cuda(), mask.cuda()
-                truth = truth * mask
+                camera, meta, truth = camera.cuda(), meta.cuda(), truth.cuda()
 
                 loss = iterate(net, loss_func=loss_func, optimizer=optimizer,
-                               input=(camera, meta), truth=truth, mask=mask)
+                               input=(camera, meta), truth=truth)
 
                 # Logging Loss
                 train_loss.add(loss)
@@ -146,12 +144,11 @@ def main():
 
             net.eval()
 
-            for batch_idx, (camera, meta, truth, mask) in enumerate(val_data_loader):
+            for batch_idx, (camera, meta, truth) in enumerate(val_data_loader):
                 # Cuda everything
-                camera, meta, truth, mask = camera.cuda(), meta.cuda(), truth.cuda(), mask.cuda()
-                truth = truth * mask
+                camera, meta, truth = camera.cuda(), meta.cuda(), truth.cuda()
 
-                loss = iterate(net, loss_func=loss_func, truth=truth, input=(camera, meta), mask=mask, train=False)
+                loss = iterate(net, loss_func=loss_func, truth=truth, input=(camera, meta), train=False)
 
                 # Logging Loss
                 val_loss.add(loss)

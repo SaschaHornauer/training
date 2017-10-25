@@ -69,7 +69,7 @@ class SqueezeNetLSTM(nn.Module):  # pylint: disable=too-few-public-methods
         )
         self.lstms = nn.ModuleList([
             nn.LSTM(16, 32, 1, batch_first=True),
-            nn.LSTM(32, 4, 1, batch_first=True)
+            nn.LSTM(32, 2, 1, batch_first=True)
         ])
 
         for mod in self.modules():
@@ -90,7 +90,7 @@ class SqueezeNetLSTM(nn.Module):  # pylint: disable=too-few-public-methods
         net_output = net_output.view(net_output.size(0), self.n_steps, -1)
         for lstm in self.lstms:
             net_output = lstm(net_output)[0]
-        net_output = net_output.contiguous().view(net_output.size(0), -1)
+        print(net_output)
         return net_output
 
     def num_params(self):
@@ -99,10 +99,12 @@ class SqueezeNetLSTM(nn.Module):  # pylint: disable=too-few-public-methods
 
 def unit_test():
     """Tests SqueezeNetLSTM for size constitency"""
-    test_net = SqueezeNetLSTM()
+    test_net = SqueezeNetLSTM(6, 20)
     test_net_output = test_net(
-        Variable(torch.randn(5, 12, 94, 168)),
-        Variable(torch.randn(5, 8, 23, 41)))
+        Variable(torch.randn(1, 36, 94, 168)),
+        Variable(torch.randn(1, 8, 23, 41)))
+    sizes = [1, 20, 2]
+    assert(all(test_net_output.size(i) == sizes[i] for i in range(len(sizes))))
     logging.debug('Net Test Output = {}'.format(test_net_output))
     logging.debug('Network was Unit Tested')
     print(test_net.num_params())
