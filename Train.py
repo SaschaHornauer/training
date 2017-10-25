@@ -82,20 +82,18 @@ def main():
 
     # Iterate over all epochs
 
+    torch.cuda.set_device(config['hardware']['gpu'])
+    torch.cuda.device(config['hardware']['gpu'])
+    if not config['training']['start_epoch'] == 0:
+        print("Resuming")
+        save_data = torch.load(
+            os.path.join(config['model']['save_path'], config['model']['name'] + "epoch%02d.weights" % (epoch - 1,)))
+        net.load_state_dict(save_data)
+        net.cuda()
+    optimizer = torch.optim.Adam(net.parameters())
 
     for epoch in range(config['training']['start_epoch'], config['training']['num_epochs']):
         try:
-            torch.cuda.set_device(config['hardware']['gpu'])
-            torch.cuda.device(config['hardware']['gpu'])
-            if not epoch == 0:
-                print("Resuming")
-                save_data = torch.load(os.path.join(config['model']['save_path'], config['model']['name'] + "epoch%02d.weights" % (epoch - 1,)))
-                net.load_state_dict(save_data)
-
-            net.cuda()
-
-            optimizer = torch.optim.Adam(net.parameters())
-
             logging.debug('Starting training epoch #{}'.format(epoch))
 
             train_dataset = Dataset(config['training']['dataset']['path'],
