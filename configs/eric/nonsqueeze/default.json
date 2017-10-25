@@ -5,6 +5,7 @@
   },
 
   "training": {
+    "partition_cache": "./save/training.cache",
     "start_epoch": 0,
     "num_epochs": 100,
     "learning_rate": null,
