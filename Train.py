@@ -45,8 +45,8 @@ def iterate(net, loss_func, optimizer=None, input=None, truth=None, train=True):
     if not train:
         if iter_num['i'] % 20 == 0:
             print('------------------')
-            print([int(i * 1000) / 1000. for i in np.ndarray.tolist(outputs.cpu()[0].data.transpose(0,1).view(-1).numpy())])
-            print([int(i * 1000) / 1000. for i in np.ndarray.tolist(truth.cpu()[0].data.transpose(0,1).view(-1).numpy())])
+            print([int(i * 1000) / 1000. for i in np.ndarray.tolist(outputs.cpu()[0].data.contiguous().transpose(0,1).view(-1).numpy())])
+            print([int(i * 1000) / 1000. for i in np.ndarray.tolist(truth.cpu()[0].data.contiguous().transpose(0,1).view(-1).numpy())])
         iter_num['i'] = 1 + iter_num['i']
         return loss.cpu().data[0]
 
@@ -59,8 +59,8 @@ def iterate(net, loss_func, optimizer=None, input=None, truth=None, train=True):
 
     if iter_num['i'] % 20 == 0:
         print('------------------')
-        print([int(i * 1000) / 1000. for i in np.ndarray.tolist(outputs.cpu()[0].data.transpose(0,1).view(-1).numpy())])
-        print([int(i * 1000) / 1000. for i in np.ndarray.tolist(truth.cpu()[0].data.transpose(0,1).view(-1).numpy())])
+        print([int(i * 1000) / 1000. for i in np.ndarray.tolist(outputs.cpu()[0].data.contiguous().transpose(0,1).view(-1).numpy())])
+        print([int(i * 1000) / 1000. for i in np.ndarray.tolist(truth.cpu()[0].data.contiguous().transpose(0,1).view(-1).numpy())])
     iter_num['i'] = 1 + iter_num['i']
 
     return loss.cpu().data[0]
