@@ -202,7 +202,7 @@ class Dataset(data.Dataset):
             motor = int(float(self.run_files[run_idx]['metadata']['motor'][t]) / 25)
             control_bins[steer][motor] += 1
             if _ % 100000 == 0:
-                print(_ + ' binned')
+                print(str(_) + ' binned')
             _ += 1
         num_points = sum([sum(c) for c in control_bins])
         min_num = min([min([c2 for c2 in c if c2 > 1000]) for c in control_bins if c > 1000])
