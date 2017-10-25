@@ -9,7 +9,7 @@
     "num_epochs": 100,
     "learning_rate": null,
     "rand_seed": 123123123,
-    "p_exclude_run": 0.9,
+    "p_exclude_run": 0.0,
     "dataset": {
       "path": "/hostroot/home/ehou/trainingAll/training/data/train/",
       "p_subsample": 0.005,
