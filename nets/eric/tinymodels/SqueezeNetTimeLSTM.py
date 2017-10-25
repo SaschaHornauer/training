@@ -127,9 +127,9 @@ def unit_test():
     """Tests SqueezeNetTimeLSTM for size constitency"""
     test_net = SqueezeNetTimeLSTM(6, 20)
     test_net_output = test_net(
-        Variable(torch.randn(4, 6*12, 94, 168)),
-        Variable(torch.randn(4, 12, 8, 23, 41)))
-    sizes = [4, 20, 2]
+        Variable(torch.randn(1, 36, 94, 168)),
+        Variable(torch.randn(1, 6, 8, 23, 41)))
+    sizes = [1, 20, 2]
     assert(all(test_net_output.size(i) == sizes[i] for i in range(len(sizes))))
     logging.debug('Net Test Output = {}'.format(test_net_output))
     logging.debug('Network was Unit Tested')

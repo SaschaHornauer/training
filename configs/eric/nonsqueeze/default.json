@@ -37,9 +37,9 @@
   },
 
   "model": {
-    "past_frames": 12,
-    "future_frames": 50,
-    "frame_stride": 1,
+    "past_frames": 6,
+    "future_frames": 20,
+    "frame_stride": 10,
     "save_path": "./save/nonsqueeze/",
     "resume_path": "./save/nonsqueeze/"
   },

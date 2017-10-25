@@ -10,6 +10,6 @@
     "name": "timelstm",
     "py_path": "nets.eric.tinymodels.SqueezeNetTimeLSTM",
     "separate_frames": true,
-    "metadata_shape": [12, 8, 23, 41]
+    "metadata_shape": [6, 8, 23, 41]
   }
 }
