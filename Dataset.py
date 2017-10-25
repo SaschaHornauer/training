@@ -229,7 +229,7 @@ class Dataset(data.Dataset):
 
         for i in train_part:
             run_idx, t = self.create_map(i)
-            steer, motor = self.controls[0], self.controls[1]
+            steer, motor = self.controls[0][i], self.controls[1][i]
             if random.random() > p_subsample * (self.num_cache_points / (8 * self.min_cache_points) * self.train_class_probs[steer][motor]):
                 remove_train.add(i)
         for i in remove_train:
