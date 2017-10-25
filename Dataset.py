@@ -229,7 +229,6 @@ class Dataset(data.Dataset):
                 json.dump([self.train_class_probs, self.controls, self.num_cache_points, self.min_cache_points], open(self.cache_file, 'w'))
         _ = 0
         for i in train_part:
-            run_idx, t = self.create_map(i)
             steer, motor = self.controls[str(i)][0], self.controls[str(i)][1]
             if random.random() > p_subsample * (self.num_cache_points / (8 * self.min_cache_points) * self.train_class_probs[steer][motor]):
                 remove_train.add(i)
