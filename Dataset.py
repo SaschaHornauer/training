@@ -223,7 +223,7 @@ class Dataset(data.Dataset):
                     _ += 1
                 self.num_cache_points = sum([sum(c) for c in control_bins])
                 self.min_cache_points = min([min([c2 for c2 in c if c2 > 1000]) for c in control_bins if c > 1000])
-                self.self.train_class_probs = [[self.num_cache_points / (c + 1e-32) for c in _] for _ in control_bins]
+                self.train_class_probs = [[self.num_cache_points / (c + 1e-32) for c in _] for _ in control_bins]
                 print 'ending binning'
                 json.dump([self.train_class_probs, self.controls], open(self.cache_file, 'w'))
 
