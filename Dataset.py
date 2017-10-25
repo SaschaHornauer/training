@@ -207,6 +207,7 @@ class Dataset(data.Dataset):
             try:
                 self.train_class_probs = json.load(open(self.cache_file, 'r'))
             except:
+                print(self.cache_file)
                 print 'starting binning'
                 _ = 0
                 for i in train_part:
