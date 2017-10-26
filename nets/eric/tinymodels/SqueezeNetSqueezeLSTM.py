@@ -79,7 +79,7 @@ class SqueezeNetSqueezeLSTM(nn.Module):  # pylint: disable=too-few-public-method
 
         for mod in self.modules():
             if hasattr(mod, 'weight') and hasattr(mod.weight, 'data'):
-                init.normal(mod.weight.data, 0, 3)
+                init.normal(mod.weight.data, 0, 0.5)
             if hasattr(mod, 'bias') and hasattr(mod.bias, 'data'):
                 init.normal(mod.bias.data, 0, 0.5)
 
