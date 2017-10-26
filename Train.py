@@ -99,7 +99,6 @@ def main():
     for epoch in range(config['training']['start_epoch'], config['training']['num_epochs']):
         try:
             logging.debug('Starting training epoch #{}'.format(epoch))
-
             train_dataset = Dataset(config['training']['dataset']['path'],
                                     require_one=config['dataset']['include_labels'],
                                     ignore_list=config['dataset']['ignore_labels'],
@@ -113,8 +112,6 @@ def main():
                                     p_exclude_run=config['training']['p_exclude_run'],
                                     cache_file=('partition_cache' in config['training'] and config['training']['partition_cache'])
                                                or config['model']['save_path'] + config['model']['name'] + '.cache')
-
-            print ('SEED ' + str(epoch+config['training']['rand_seed']))
             train_data_loader = train_dataset.get_train_loader(batch_size=config['training']['dataset']['batch_size'],
                                                                shuffle=config['training']['dataset']['shuffle'],
                                                                p_subsample=config['training']['dataset']['p_subsample'],
