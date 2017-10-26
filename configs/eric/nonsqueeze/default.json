@@ -38,7 +38,7 @@
 
   "model": {
     "past_frames": 6,
-    "future_frames": 10,
+    "future_frames": 5,
     "frame_stride": 2,
     "save_path": "./save/nonsqueeze/",
     "resume_path": "./save/nonsqueeze/"
