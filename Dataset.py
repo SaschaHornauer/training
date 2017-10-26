@@ -144,7 +144,6 @@ class Dataset(data.Dataset):
         # Get behavioral mode
         metadata_raw = self.run_files[run_idx]['run_labels']
 
-        metadata = torch.FloatTensor(self.nframes, 64, 23, 41)
         metadata = torch.FloatTensor(*self.metadata_shape)
 
         metadata[:] = 0.
