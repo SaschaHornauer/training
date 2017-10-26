@@ -38,8 +38,8 @@
 
   "model": {
     "past_frames": 6,
-    "future_frames": 20,
-    "frame_stride": 10,
+    "future_frames": 10,
+    "frame_stride": 2,
     "save_path": "./save/tinymodels/",
     "resume_path": "./save/tinymodels/"
   },
