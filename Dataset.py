@@ -197,7 +197,6 @@ class Dataset(data.Dataset):
             return self.val_part
 
     def get_train_loader(self, p_subsample=None, seed=None, *args, **kwargs):
-        random.seed(seed)
         remove_train, train_part = set(), set(self.train_part or self.get_train_partition())
         control_bins = [[0 for __ in range(0, 4)] for _ in range(0, 4)]
 
@@ -227,6 +226,7 @@ class Dataset(data.Dataset):
                 print 'ending binning'
                 json.dump([self.train_class_probs, self.controls, self.num_cache_points, self.min_cache_points], open(self.cache_file, 'w'))
         _ = 0
+        random.seed(seed)
         for i in train_part:
             steer, motor = self.controls[str(i)][0], self.controls[str(i)][1]
             if random.random() > p_subsample * (self.num_cache_points / (8 * self.min_cache_points) * self.train_class_probs[steer][motor]):

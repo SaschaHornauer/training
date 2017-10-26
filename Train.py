@@ -114,6 +114,7 @@ def main():
                                     cache_file=('partition_cache' in config['training'] and config['training']['partition_cache'])
                                                or config['model']['save_path'] + config['model']['name'] + '.cache')
 
+            print ('SEED ' + str(epoch+config['training']['rand_seed']))
             train_data_loader = train_dataset.get_train_loader(batch_size=config['training']['dataset']['batch_size'],
                                                                shuffle=config['training']['dataset']['shuffle'],
                                                                p_subsample=config['training']['dataset']['p_subsample'],
