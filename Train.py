@@ -91,7 +91,7 @@ def main():
     if not config['training']['start_epoch'] == 0:
         print("Resuming")
         save_data = torch.load(
-            os.path.join(config['model']['save_path'], config['model']['name'] + "epoch%02d.weights" % (epoch - 1,)))
+            os.path.join(config['model']['save_path'], config['model']['name'] + "epoch%02d.weights" % (config['training']['start_epoch'] - 1,)))
         net.load_state_dict(save_data)
         net.cuda()
     optimizer = torch.optim.Adam(net.parameters())
