@@ -28,9 +28,12 @@ class NvidiaMetadata(nn.Module):
         )
         for mod in self.modules():
             if hasattr(mod, 'weight') and hasattr(mod.weight, 'data'):
-                init.normal(mod.weight.data, 0, 0.5)
+                if isinstance(mod, nn.Conv2d):
+                    init.kaiming_normal(mod.weight.data)
+                else:
+                    init.xavier_normal(mod.weight.data)
             if hasattr(mod, 'bias') and hasattr(mod.bias, 'data'):
-                init.normal(mod.bias.data, 0, 0.5)
+                init.normal(mod.bias.data, 0, 0.1)
 
 
     def forward(self, x, metadata):

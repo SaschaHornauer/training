@@ -74,9 +74,12 @@ class SqueezeNetLSTM(nn.Module):  # pylint: disable=too-few-public-methods
 
         for mod in self.modules():
             if hasattr(mod, 'weight') and hasattr(mod.weight, 'data'):
-                init.normal(mod.weight.data, 0, 0.5)
+                if isinstance(mod, nn.Conv2d):
+                    init.kaiming_normal(mod.weight.data)
+                else:
+                    init.xavier_normal(mod.weight.data)
             if hasattr(mod, 'bias') and hasattr(mod.bias, 'data'):
-                init.normal(mod.bias.data, 0, 0.5)
+                init.normal(mod.bias.data, 0, 0.1)
 
     def forward(self, camera_data, metadata):
         """Forward-propagates data through SqueezeNetLSTM"""
