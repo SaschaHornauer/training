@@ -27,9 +27,10 @@ class NvidiaMetadata(nn.Module):
             nn.Linear(100, 2 * self.n_steps)
         )
         for mod in self.modules():
-            init.normal(mod.weight.data, 0, 3)
-            if mod.bias is not None:
-                init.normal(mod.weight.data, 0, 0.5)
+            if hasattr(mod, 'weight') and hasattr(mod.weight, 'data'):
+                init.normal(mod.weight.data, 0, 3)
+            if hasattr(mod, 'bias') and hasattr(mod.bias, 'data'):
+                init.normal(mod.bias.data, 0, 0.5)
 
 
     def forward(self, x, metadata):
