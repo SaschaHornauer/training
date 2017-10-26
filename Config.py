@@ -20,6 +20,8 @@ class Config(dict):
             ARGS.config = ''
         if config_file_name != './configs/':
             self.load_helper(config_file_name, ARGS)
+        if ARGS and ARGS.epoch:
+            self['training']['start_epoch'] = ARGS.epoch
 
     def load_helper(self, path=None, ARGS=None):
         if path is None:
@@ -41,7 +43,7 @@ class Config(dict):
         """
         for key in kv:
             if key == 'gpu' and ARGS and ARGS.gpu != -1:
-                self['gpu'] = ARGS
+                self['gpu'] = ARGS.gpu
             if type(kv[key]) is dict:
                 if key in self:
                     self[key].load_config(kv[key])
