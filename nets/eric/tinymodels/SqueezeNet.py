@@ -62,14 +62,10 @@ class SqueezeNet(nn.Module):
             nn.AvgPool2d(kernel_size=5, stride=5)
         )
 
-        for m in self.modules():
-            if isinstance(m, nn.Conv2d):
-                if m is final_conv:
-                    init.normal(m.weight.data, mean=0.0, std=0.01)
-                else:
-                    init.kaiming_uniform(m.weight.data)
-                if m.bias is not None:
-                    m.bias.data.zero_()
+        for mod in self.modules():
+            init.normal(mod.weight.data, 0, 3)
+            if mod.bias is not None:
+                init.normal(mod.weight.data, 0, 0.5)
 
     def forward(self, x, metadata):
         x = self.pre_metadata_features(x)

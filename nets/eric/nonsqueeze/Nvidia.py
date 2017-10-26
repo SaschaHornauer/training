@@ -24,6 +24,10 @@ class Nvidia(nn.Module):
             nn.Linear(768, 100),
             nn.Linear(100, 2 * self.n_steps)
         )
+        for mod in self.modules():
+            init.normal(mod.weight.data, 0, 3)
+            if mod.bias is not None:
+                init.normal(mod.weight.data, 0, 0.5)
 
 
     def forward(self, x, metadata):

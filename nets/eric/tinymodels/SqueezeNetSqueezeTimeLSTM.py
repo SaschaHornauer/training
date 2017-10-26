@@ -83,13 +83,9 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
         ])
 
         for mod in self.modules():
-            if isinstance(mod, nn.Conv2d):
-                if mod is final_conv:
-                    init.normal(mod.weight.data, mean=0.0, std=0.01)
-                else:
-                    init.kaiming_uniform(mod.weight.data)
-                if mod.bias is not None:
-                    mod.bias.data.zero_()
+            init.normal(mod.weight.data, 0, 3)
+            if mod.bias is not None:
+                init.normal(mod.weight.data, 0, 0.5)
 
     def forward(self, camera_data, metadata):
         """Forward-propagates data through SqueezeNetTimeLSTM"""
