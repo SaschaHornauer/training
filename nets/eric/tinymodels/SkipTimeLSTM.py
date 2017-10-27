@@ -19,6 +19,7 @@ class SkipFire(nn.Module):  # pylint: disable=too-few-public-methods
                  expand1x1_planes, expand3x3_planes, skip_planes):
         """Sets up layers for Fire module"""
         super(SkipFire, self).__init__()
+        self.norm = torch.nn.BatchNorm2d(expand1x1_planes + expand3x3_planes + skip_planes)
         self.inplanes = inplanes
         self.skip_planes = skip_planes
         self.squeeze = nn.Conv2d(inplanes, squeeze_planes, kernel_size=1)
@@ -35,11 +36,11 @@ class SkipFire(nn.Module):  # pylint: disable=too-few-public-methods
     def forward(self, input_data):
         """Forward-propagates data through Fire module"""
         output_data = self.squeeze_activation(self.squeeze(input_data))
-        return torch.cat([
+        return self.norm(torch.cat([
             self.expand1x1_activation(self.expand1x1(output_data)),
             self.expand3x3_activation(self.expand3x3(output_data)),
             self.skip(input_data)
-        ], 1)
+        ], 1))
 
 
 class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
@@ -88,7 +89,7 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
             if hasattr(mod, 'weight') and hasattr(mod.weight, 'data'):
                 if isinstance(mod, nn.Conv2d):
                     init.kaiming_normal(mod.weight.data)
-                else:
+                elif len(mod.weight.data.size()) >= 2:
                     init.xavier_normal(mod.weight.data)
             if hasattr(mod, 'bias') and hasattr(mod.bias, 'data'):
                 init.normal(mod.bias.data, 0, 0.0001)
