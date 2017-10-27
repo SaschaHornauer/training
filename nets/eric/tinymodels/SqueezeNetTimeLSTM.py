@@ -87,7 +87,6 @@ class SkipTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
                     init.kaiming_normal(mod.weight.data)
                 elif len(mod.weight.data.size()) >= 2:
                     init.xavier_normal(mod.weight.data)
-                print mod.weight.data
             if hasattr(mod, 'bias') and hasattr(mod.bias, 'data'):
                 init.normal(mod.bias.data, 0, 0.0001)
 
