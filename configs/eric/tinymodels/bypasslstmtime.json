@@ -1,0 +1,15 @@
+{
+  "parent_config": "eric/tinymodels/default.json",
+  "logging": {
+    "path": "bypasstimelstm_training.log",
+    "training_loss": "./logs/tinymodels/bypasstimelstm_trainloss.log",
+    "validation_loss": "./logs/tinymodels/bypasstimelstm_valloss.log"
+  },
+
+  "model": {
+    "name": "bypasstimelstm",
+    "py_path": "nets.eric.tinymodels.BypassTimeLSTM",
+    "separate_frames": true,
+    "metadata_shape": [6, 8, 23, 41]
+  }
+}
