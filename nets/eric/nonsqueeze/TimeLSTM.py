@@ -133,6 +133,7 @@ def unit_test():
     sizes = [1, 20, 2]
     assert(all(test_net_output.size(i) == sizes[i] for i in range(len(sizes))))
     logging.debug('Network was Unit Tested')
+    print test_net.num_params()
 
 unit_test()
 

@@ -1,0 +1,15 @@
+{
+  "parent_config": "eric/tinymodels/default.json",
+  "logging": {
+    "path": "skiptimelstm_training.log",
+    "training_loss": "./logs/tinymodels/skiptimelstm_trainloss.log",
+    "validation_loss": "./logs/tinymodels/skiptimelstm_valloss.log"
+  },
+
+  "model": {
+    "name": "skiptimelstm",
+    "py_path": "nets.eric.tinymodels.SkipTimeLSTM",
+    "separate_frames": true,
+    "metadata_shape": [6, 8, 23, 41]
+  }
+}
