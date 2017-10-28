@@ -47,7 +47,8 @@
   "dataset": {
     "path": "/hostroot/data/dataset/bair_car_data_Main_Dataset/",
     "train_path": null,
-    "ignore_labels": ["reject_run", "left", "out1_in2", "play", "Smyth", "racing"],
+    "ignore_labels": ["reject_run", "left", "out1_in2", "play", "Smyth", "racing", "furtive",
+      "follow", "clockwise", "counterclockwise"],
     "train_ratio": 0.8,
     "val_ratio": 0.2,
     "include_labels": ["campus", "local", "Tilden"],
