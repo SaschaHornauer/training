@@ -14,22 +14,22 @@ class Feedforward(nn.Module):
         self.n_steps = n_steps
         self.n_frames = n_frames
         self.pre_metadata_features = nn.Sequential(
-            nn.Conv2d(3 * 2 * n_frames, 8, kernel_size=3, stride=2),
+            nn.Conv2d(3 * 2 * n_frames, 16, kernel_size=3, stride=2),
             nn.ReLU(inplace=True),
             nn.MaxPool2d(kernel_size=3, stride=2, ceil_mode=True),
-            nn.Conv2d(8, 8, kernel_size=3, padding=1)
+            nn.Conv2d(16, 16, kernel_size=3, padding=1)
         )
         self.post_metadata_features = nn.Sequential(
-            nn.Conv2d(16, 12, kernel_size=3, padding=1),
+            nn.Conv2d(24, 24, kernel_size=3, padding=1),
             nn.MaxPool2d(kernel_size=3, stride=2, ceil_mode=True),
-            nn.Conv2d(12, 12, kernel_size=3, padding=1),
-            nn.Conv2d(12, 16, kernel_size=3, padding=1),
+            nn.Conv2d(24, 32, kernel_size=3, padding=1),
+            nn.Conv2d(32, 32, kernel_size=3, padding=1),
             nn.MaxPool2d(kernel_size=3, stride=2, ceil_mode=True),
-            nn.Conv2d(16, 16, kernel_size=3, padding=1),
-            nn.Conv2d(16, 24, kernel_size=3, padding=1),
-            nn.Conv2d(24, 24, kernel_size=3, padding=1)
+            nn.Conv2d(32, 48, kernel_size=3, padding=1),
+            nn.Conv2d(48, 48, kernel_size=3, padding=1),
+            nn.Conv2d(48, 64, kernel_size=3, padding=1)
         )
-        final_conv = nn.Conv2d(24, self.n_steps, kernel_size=1)
+        final_conv = nn.Conv2d(64, self.n_steps, kernel_size=1)
         self.final_output = nn.Sequential(
             nn.Dropout(p=0.5),
             final_conv,
