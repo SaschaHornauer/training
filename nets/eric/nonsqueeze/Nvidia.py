@@ -20,12 +20,14 @@ class Nvidia(nn.Module):
             nn.ReLU(),
             nn.Conv2d(36, 48, kernel_size=5, stride=2),
             nn.ReLU(),
+            nn.Dropout(0.5),
             nn.Conv2d(48, 64, kernel_size=3, stride=2),
             nn.ReLU(),
             nn.Conv2d(64, 64, kernel_size=3, stride=1),
             nn.ReLU()
         )
         self.fcl = nn.Sequential(
+            nn.Dropout(0.5),
             nn.Linear(768, 100),
             nn.Linear(100, 2 * self.n_steps)
         )
