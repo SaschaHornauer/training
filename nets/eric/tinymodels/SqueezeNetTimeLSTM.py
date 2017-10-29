@@ -57,7 +57,7 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
             Fire(16, 4, 8, 8),
         )
         self.post_metadata_features = nn.Sequential(
-            Fire(24, 6, 12, 12),
+            Fire(16, 6, 12, 12),
             nn.MaxPool2d(kernel_size=3, stride=2, ceil_mode=True),
             Fire(24, 8, 16, 16),
             Fire(32, 8, 16, 16),
@@ -97,7 +97,7 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
         metadata = metadata.contiguous().view(-1, 8, 23, 41)
         net_output = camera_data.contiguous().view(-1, 6, 94, 168)
         net_output = self.pre_metadata_features(net_output)
-        net_output = torch.cat((net_output, metadata), 1)
+        # net_output = torch.cat((net_output, metadata), 1)
         net_output = self.post_metadata_features(net_output)
         net_output = self.pre_lstm_output(net_output)
         net_output = net_output.contiguous().view(batch_size, -1, 16)

@@ -64,23 +64,23 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
         self.n_frames = n_frames
         self.n_steps = n_steps
         self.pre_metadata_features = nn.Sequential(
-            nn.Conv2d(3 * 2, 16, kernel_size=3, stride=2),
+            nn.Conv2d(3 * 2, 12, kernel_size=3, stride=2),
             nn.ReLU(inplace=True),
             nn.MaxPool2d(kernel_size=3, stride=2, ceil_mode=True),
-            BypassFire(16, 16),
+            BypassFire(12, 16),
         )
         self.post_metadata_features = nn.Sequential(
+            BypassFire(16, 16),
+            nn.MaxPool2d(kernel_size=3, stride=2, ceil_mode=True),
+            BypassFire(16, 24),
             BypassFire(24, 24),
             nn.MaxPool2d(kernel_size=3, stride=2, ceil_mode=True),
             BypassFire(24, 32),
             BypassFire(32, 32),
-            nn.MaxPool2d(kernel_size=3, stride=2, ceil_mode=True),
             BypassFire(32, 48),
             BypassFire(48, 48),
-            BypassFire(48, 64),
-            BypassFire(64, 64),
         )
-        final_conv = nn.Conv2d(64, 8, kernel_size=1)
+        final_conv = nn.Conv2d(48, 8, kernel_size=1)
         self.pre_lstm_output = nn.Sequential(
             final_conv,
             nn.AvgPool2d(kernel_size=5, stride=5),
@@ -110,7 +110,7 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
         metadata = metadata.contiguous().view(-1, 8, 23, 41)
         net_output = camera_data.contiguous().view(-1, 6, 94, 168)
         net_output = self.pre_metadata_features(net_output)
-        net_output = torch.cat((net_output, metadata), 1)
+        # net_output = torch.cat((net_output, metadata), 1)
         net_output = self.post_metadata_features(net_output)
         net_output = self.pre_lstm_output(net_output)
         net_output = net_output.contiguous().view(batch_size, -1, 16)
