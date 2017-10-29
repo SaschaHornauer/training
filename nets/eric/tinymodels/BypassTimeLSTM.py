@@ -91,8 +91,7 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
         self.lstm_decoder = nn.ModuleList([
             nn.LSTM(1, 32, 1, batch_first=True)
         ])
-        self.output_linear = nn.Sequential(nn.Linear(32, 2),
-                                           nn.Sigmoid())
+        self.output_linear = nn.Sequential(nn.Linear(32, 2))
 
         for mod in self.modules():
             if hasattr(mod, 'weight') and hasattr(mod.weight, 'data'):
