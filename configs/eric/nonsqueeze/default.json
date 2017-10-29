@@ -7,7 +7,7 @@
   "training": {
     "partition_cache": "./save/training.cache",
     "start_epoch": 0,
-    "num_epochs": 100,
+    "num_epochs": 500,
     "learning_rate": null,
     "rand_seed": 123123123,
     "p_exclude_run": 0.0,
