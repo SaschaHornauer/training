@@ -14,26 +14,33 @@ class Feedforward(nn.Module):
         self.n_steps = n_steps
         self.n_frames = n_frames
         self.pre_metadata_features = nn.Sequential(
-            nn.Conv2d(3 * 2 * n_frames, 16, kernel_size=3, stride=2),
+            nn.Conv2d(3 * 2 * n_frames, 12, kernel_size=3, stride=2),
             nn.ReLU(inplace=True),
             nn.MaxPool2d(kernel_size=3, stride=2, ceil_mode=True),
-            nn.Conv2d(16, 16, kernel_size=3, padding=1)
+            nn.Conv2d(12, 12, kernel_size=3, padding=1),
+            nn.ReLU(inplace=True)
         )
         self.post_metadata_features = nn.Sequential(
+            nn.Conv2d(12, 16, kernel_size=3, padding=1),
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(kernel_size=3, stride=2, ceil_mode=True),
+            nn.Conv2d(16, 16, kernel_size=3, padding=1),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(16, 24, kernel_size=3, padding=1),
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(kernel_size=3, stride=2, ceil_mode=True),
             nn.Conv2d(24, 24, kernel_size=3, padding=1),
-            nn.MaxPool2d(kernel_size=3, stride=2, ceil_mode=True),
+            nn.ReLU(inplace=True),
             nn.Conv2d(24, 32, kernel_size=3, padding=1),
+            nn.ReLU(inplace=True),
             nn.Conv2d(32, 32, kernel_size=3, padding=1),
-            nn.MaxPool2d(kernel_size=3, stride=2, ceil_mode=True),
-            nn.Conv2d(32, 48, kernel_size=3, padding=1),
-            nn.Conv2d(48, 48, kernel_size=3, padding=1),
-            nn.Conv2d(48, 64, kernel_size=3, padding=1)
+            nn.ReLU(inplace=True)
         )
-        final_conv = nn.Conv2d(64, self.n_steps, kernel_size=1)
+        final_conv = nn.Conv2d(32, self.n_steps, kernel_size=1)
         self.final_output = nn.Sequential(
             nn.Dropout(p=0.5),
             final_conv,
-            # nn.ReLU(inplace=True),
+            nn.ReLU(inplace=True),
             nn.AvgPool2d(kernel_size=5, stride=5)
         )
 
@@ -48,7 +55,7 @@ class Feedforward(nn.Module):
 
     def forward(self, x, metadata):
         x = self.pre_metadata_features(x)
-        x = torch.cat((x, metadata), 1)
+        # x = torch.cat((x, metadata), 1)
         x = self.post_metadata_features(x)
         x = self.final_output(x)
         x = x.view(x.size(0), -1, 2)
