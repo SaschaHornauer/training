@@ -11,9 +11,10 @@
     "learning_rate": null,
     "rand_seed": 123123123,
     "p_exclude_run": 0.0,
+    "bias_sampling": false,
     "dataset": {
       "path": "/hostroot/home/ehou/trainingAll/training/data/train/",
-      "p_subsample": 0.0005,
+      "p_subsample": 0.0001,
       "batch_size": 75,
       "shuffle": true,
       "train_ratio": 1.0

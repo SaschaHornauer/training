@@ -15,10 +15,15 @@ class Nvidia(nn.Module):
         self.n_frames = n_frames
         self.conv_nets = nn.Sequential(
             nn.Conv2d(3 * 2 * self.n_frames, 24, kernel_size=5, stride=2),
+            nn.ReLU(),
             nn.Conv2d(24, 36, kernel_size=5, stride=2),
+            nn.ReLU(),
             nn.Conv2d(36, 48, kernel_size=5, stride=2),
+            nn.ReLU(),
             nn.Conv2d(48, 64, kernel_size=3, stride=2),
-            nn.Conv2d(64, 64, kernel_size=3, stride=1)
+            nn.ReLU(),
+            nn.Conv2d(64, 64, kernel_size=3, stride=1),
+            nn.ReLU()
         )
         self.fcl = nn.Sequential(
             nn.Linear(768, 100),

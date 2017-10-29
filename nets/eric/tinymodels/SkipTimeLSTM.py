@@ -43,12 +43,12 @@ class SkipFire(nn.Module):  # pylint: disable=too-few-public-methods
         ], 1))
 
 
-class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
+class SkipTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
     """SqueezeNet+LSTM for end to end autonomous driving"""
 
     def __init__(self, n_frames=2, n_steps=10):
         """Sets up layers"""
-        super(SqueezeNetTimeLSTM, self).__init__()
+        super(SkipTimeLSTM, self).__init__()
 
         self.is_cuda = False
 
@@ -127,14 +127,14 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
 
     def cuda(self, device_id=None):
         self.is_cuda = True
-        return super(SqueezeNetTimeLSTM, self).cuda(device_id)
+        return super(SkipTimeLSTM, self).cuda(device_id)
 
     def num_params(self):
         return sum([reduce(lambda x, y: x * y, [dim for dim in p.size()], 1) for p in self.parameters()])
 
 def unit_test():
     """Tests SqueezeNetTimeLSTM for size constitency"""
-    test_net = SqueezeNetTimeLSTM(6, 20)
+    test_net = SkipTimeLSTM(6, 20)
     test_net_output = test_net(
         Variable(torch.randn(1, 36, 94, 168)),
         Variable(torch.randn(1, 6, 8, 23, 41)))
@@ -146,4 +146,4 @@ def unit_test():
 
 unit_test()
 
-Net = SqueezeNetTimeLSTM
+Net = SkipTimeLSTM
