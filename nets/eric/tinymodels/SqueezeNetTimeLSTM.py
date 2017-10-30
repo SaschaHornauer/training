@@ -91,6 +91,7 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
                     init.xavier_normal(mod.weight.data)
             if hasattr(mod, 'bias') and hasattr(mod.bias, 'data'):
                 init.normal(mod.bias.data, 0, 0.0001)
+        self.is_generating = False
 
 
 
@@ -107,8 +108,7 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
         for lstm in self.lstm_encoder:
             net_output, last_hidden_cell = lstm(net_output)
             last_hidden_cell = list(last_hidden_cell)
-        should_generate = random.random() < 0.5
-        if (controls is not None) and (not should_generate):
+        if (controls is not None) and (not self.is_generating):
             for lstm in self.lstm_decoder:
                 if last_hidden_cell:
                     # last_hidden_cell[0] = last_hidden_cell[0].contiguous().view(batch_size, -1, 256)
@@ -133,6 +133,7 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
                     list_outputs.append(linear.unsqueeze(1))
             net_output = torch.cat(list_outputs, 1)
         net_output = net_output.contiguous().view(batch_size, -1, 2)
+        self.is_generating = not self.is_generating
         return net_output
 
     def get_decoder_seq(self, controls):
