@@ -71,7 +71,7 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
         )
         final_conv = nn.Conv2d(64, 12, kernel_size=1)
         self.pre_lstm_output = nn.Sequential(
-            nn.Dropout(0.25),
+            nn.Dropout(0.33),
             final_conv,
             nn.ReLU(inplace=True),
             nn.AvgPool2d(kernel_size=5, stride=5),
@@ -157,9 +157,9 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
 
 def unit_test():
     """Tests SqueezeNetTimeLSTM for size constitency"""
-    test_net = SqueezeNetTimeLSTM(10, 1)
+    test_net = SqueezeNetTimeLSTM(6, 1)
     test_net_output = test_net(
-        Variable(torch.randn(1, 6*10, 94, 168)),
+        Variable(torch.randn(1, 6*6, 94, 168)),
         Variable(torch.randn(1, 6, 8, 23, 41)),
         torch.randn(1, 1, 2)
     )

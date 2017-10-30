@@ -53,8 +53,8 @@ class Nvidia(nn.Module):
         return sum([reduce(lambda x, y: x * y, [dim for dim in p.size()], 1) for p in self.parameters()])
 
 def unit_test():
-    test_net = Nvidia(1, 30)
-    a = test_net(Variable(torch.randn(1, 30*6, 94, 168)),
+    test_net = Nvidia(1, 6)
+    a = test_net(Variable(torch.randn(1, 6*6, 94, 168)),
                  Variable(torch.randn(1, 12, 23, 41)))
     sizes = [1, 1, 2]
     assert(all(a.size(i) == sizes[i] for i in range(len(sizes))))

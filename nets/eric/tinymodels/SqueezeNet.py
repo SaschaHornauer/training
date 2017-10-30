@@ -58,7 +58,7 @@ class SqueezeNet(nn.Module):
         self.final_output = nn.Sequential(
             nn.Dropout(p=0.5),
             final_conv,
-            # nn.ReLU(inplace=True),
+            nn.ReLU(inplace=True),
             nn.AvgPool2d(kernel_size=5, stride=5)
         )
 
@@ -83,8 +83,8 @@ class SqueezeNet(nn.Module):
         return sum([reduce(lambda x, y: x * y, [dim for dim in p.size()], 1) for p in self.parameters()])
 
 def unit_test():
-    test_net = SqueezeNet(1, 30)
-    a = test_net(Variable(torch.randn(1, 30*6, 94, 168)),
+    test_net = SqueezeNet(1, 6)
+    a = test_net(Variable(torch.randn(1, 6*6, 94, 168)),
                  Variable(torch.randn(1, 8, 23, 41)))
     sizes = [1, 1, 2]
     assert(all(a.size(i) == sizes[i] for i in range(len(sizes))))
