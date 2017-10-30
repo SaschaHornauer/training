@@ -132,7 +132,8 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
                         lstm_output, last_hidden_cell = lstm(list_outputs[i-1], last_hidden_cell)
                     linear = self.output_linear(lstm_output.contiguous().view(-1, 32))
                     list_outputs.append(linear.unsqueeze(1))
-        net_output = torch.cat(list_outputs, 1).contiguous().view(batch_size, -1, 2)
+            net_output = torch.cat(list_outputs, 1)
+        net_output = net_output.contiguous().view(batch_size, -1, 2)
         return net_output
 
     def get_decoder_seq(self, controls):
