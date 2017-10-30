@@ -4,6 +4,7 @@ import logging
 import torch
 import torch.nn as nn
 import torch.nn.init as init
+import random
 from torch.autograd import Variable
 
 logging.basicConfig(filename='training.log', level=logging.DEBUG)
@@ -95,7 +96,6 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
 
     def forward(self, camera_data, metadata, controls=None):
         """Forward-propagates data through SqueezeNetTimeLSTM"""
-
         batch_size = camera_data.size(0)
         metadata = metadata.contiguous().view(-1, 8, 23, 41)
         net_output = camera_data.contiguous().view(-1, 6, 94, 168)
@@ -107,7 +107,9 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
         for lstm in self.lstm_encoder:
             net_output, last_hidden_cell = lstm(net_output)
             last_hidden_cell = list(last_hidden_cell)
-        if controls is not None:
+        random.seed(None)
+        should_generate = random.random < 0.5
+        if controls is not None and not should_generate:
             for lstm in self.lstm_decoder:
                 if last_hidden_cell:
                     # last_hidden_cell[0] = last_hidden_cell[0].contiguous().view(batch_size, -1, 256)
