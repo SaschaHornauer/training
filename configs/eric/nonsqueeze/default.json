@@ -14,8 +14,8 @@
     "bias_sampling": false,
     "dataset": {
       "path": "/hostroot/home/ehou/trainingAll/training/data/train/",
-      "p_subsample": 0.0001,
-      "batch_size": 50,
+      "p_subsample": 0.00025,
+      "batch_size": 250,
       "shuffle": true,
       "train_ratio": 1.0
     }
@@ -26,15 +26,15 @@
     "shuffle": true,
     "dataset": {
       "path": "/hostroot/home/ehou/trainingAll/training/data/val/",
-      "batch_size": 50,
+      "batch_size": 250,
       "shuffle": true,
-      "train_ratio": 0.99
+      "train_ratio": 0.975
     }
   },
 
   "hardware": {
     "use_gpu": true,
-    "gpu": 0
+    "gpu": 1
   },
 
   "model": {

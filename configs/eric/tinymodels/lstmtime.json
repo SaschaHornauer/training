@@ -1,10 +1,5 @@
 {
   "parent_config": "eric/tinymodels/default.json",
-  "training": {
-    "dataset": {
-      "batch_size": 25
-    }
-  },
   "logging": {
     "path": "timelstm_training.log",
     "training_loss": "./logs/tinymodels/timelstm_trainloss.log",
