@@ -107,8 +107,7 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
         for lstm in self.lstm_encoder:
             net_output, last_hidden_cell = lstm(net_output)
             last_hidden_cell = list(last_hidden_cell)
-        random.seed(None)
-        should_generate = random.random() < 0.5
+        should_generate = random.random() < 0.6667
         if (controls is not None) and (not should_generate):
             for lstm in self.lstm_decoder:
                 if last_hidden_cell:
@@ -156,8 +155,8 @@ def unit_test():
     test_net = SqueezeNetTimeLSTM(6, 10)
     test_net_output = test_net(
         Variable(torch.randn(1, 36, 94, 168)),
-        Variable(torch.randn(1, 6, 8, 23, 41))
-        # torch.randn(1, 10, 2)
+        Variable(torch.randn(1, 6, 8, 23, 41)),
+        torch.randn(1, 10, 2)
     )
     sizes = [1, 10, 2]
     assert(all(test_net_output.size(i) == sizes[i] for i in range(len(sizes))))
