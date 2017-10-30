@@ -41,7 +41,8 @@ class Feedforward(nn.Module):
             nn.Dropout(p=0.5),
             final_conv,
             nn.ReLU(inplace=True),
-            nn.AvgPool2d(kernel_size=5, stride=5)
+            nn.AvgPool2d(kernel_size=5, stride=5),
+            nn.Sigmoid()
         )
 
         for mod in self.modules():
