@@ -120,6 +120,7 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
                     net_output = lstm(net_output)[0]
             net_output = self.output_linear(net_output.contiguous().view(-1, 32))
         else:
+            print 'generating'
             net_output = Variable(torch.zeros(batch_size, self.n_steps, 2))
             net_output = net_output.cuda() if self.is_cuda else net_output
             for lstm in self.lstm_decoder:
