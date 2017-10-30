@@ -95,6 +95,7 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
 
     def forward(self, camera_data, metadata, controls=None):
         """Forward-propagates data through SqueezeNetTimeLSTM"""
+
         batch_size = camera_data.size(0)
         metadata = metadata.contiguous().view(-1, 8, 23, 41)
         net_output = camera_data.contiguous().view(-1, 6, 94, 168)
@@ -106,15 +107,28 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
         for lstm in self.lstm_encoder:
             net_output, last_hidden_cell = lstm(net_output)
             last_hidden_cell = list(last_hidden_cell)
-        for lstm in self.lstm_decoder:
-            if last_hidden_cell:
-                # last_hidden_cell[0] = last_hidden_cell[0].contiguous().view(batch_size, -1, 256)
-                # last_hidden_cell[1] = last_hidden_cell[1].contiguous().view(batch_size, -1, 256)
-                net_output = lstm(self.get_decoder_seq(controls), last_hidden_cell)[0]
-                last_hidden_cell = None
-            else:
-                net_output = lstm(net_output)[0]
-        net_output = self.output_linear(net_output.contiguous().view(-1, 32))
+        if controls is not None:
+            for lstm in self.lstm_decoder:
+                if last_hidden_cell:
+                    # last_hidden_cell[0] = last_hidden_cell[0].contiguous().view(batch_size, -1, 256)
+                    # last_hidden_cell[1] = last_hidden_cell[1].contiguous().view(batch_size, -1, 256)
+                    net_output = lstm(self.get_decoder_seq(controls), last_hidden_cell)[0]
+                    last_hidden_cell = None
+                else:
+                    net_output = lstm(net_output)[0]
+            net_output = self.output_linear(net_output.contiguous().view(-1, 32))
+        else:
+            net_output = Variable(torch.zeros(batch_size, self.n_steps, 2))
+            for lstm in self.lstm_decoder:
+                for i in range(self.n_steps):
+                    if i == 0:
+                        lstm_output, last_hidden_cell = lstm(Variable(torch.zeros(batch_size, 1, 2)), last_hidden_cell)
+                    else:
+                        print(net_output[:,i-1,:].unsqueeze(1))
+                        lstm_output, last_hidden_cell = lstm(net_output[:,i-1,:].unsqueeze(1), last_hidden_cell)
+                    linear = self.output_linear(lstm_output.contiguous().view(-1, 32))
+                    net_output[:, i, :] = linear
+        print(net_output)
         net_output = net_output.contiguous().view(batch_size, -1, 2)
         return net_output
 
@@ -125,6 +139,7 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
         decoder_input_seq = Variable(controls)
         return decoder_input_seq.cuda() if self.is_cuda else decoder_input_seq
 
+
     def cuda(self, device_id=None):
         self.is_cuda = True
         return super(SqueezeNetTimeLSTM, self).cuda(device_id)
@@ -134,11 +149,12 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
 
 def unit_test():
     """Tests SqueezeNetTimeLSTM for size constitency"""
-    test_net = SqueezeNetTimeLSTM(6, 20)
+    test_net = SqueezeNetTimeLSTM(6, 10)
     test_net_output = test_net(
         Variable(torch.randn(1, 36, 94, 168)),
-        Variable(torch.randn(1, 6, 8, 23, 41)),
-        torch.randn(1, 10, 2))
+        Variable(torch.randn(1, 6, 8, 23, 41))
+        # torch.randn(1, 10, 2)
+    )
     sizes = [1, 10, 2]
     assert(all(test_net_output.size(i) == sizes[i] for i in range(len(sizes))))
     logging.debug('Net Test Output = {}'.format(test_net_output))
