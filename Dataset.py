@@ -134,7 +134,7 @@ class Dataset(data.Dataset):
 
         list_camera_input = []
 
-        for t in range(0, self.nframes * self.frame_, self.frame_stride):
+        for t in range(0, self.nframes * self.frame_stride, self.frame_stride):
             for camera in ('left', 'right'):
                 list_camera_input.append(torch.from_numpy(data_file[camera][t]))
                 camera_data = torch.cat(list_camera_input, 2)
