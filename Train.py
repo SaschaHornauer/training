@@ -37,7 +37,7 @@ def iterate(net, loss_func, optimizer=None, input=None, truth=None, train=True):
         net.eval()
 
     # Transform inputs into Variables for pytorch and run forward prop
-    input = tuple([Variable(tensor).cuda() for tensor in input])
+    input = tuple([Variable(tensor).cuda() for tensor in input] + ([truth] if 'requires_controls' in vars(net) else []))
     outputs = net(*input).cuda()
     truth = Variable(truth).cuda()
     loss = loss_func(outputs, truth)

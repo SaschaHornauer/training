@@ -47,6 +47,7 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
         super(SqueezeNetTimeLSTM, self).__init__()
 
         self.is_cuda = False
+        self.requires_controls = True
 
         self.n_frames = n_frames
         self.n_steps = n_steps
@@ -77,7 +78,7 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
             nn.LSTM(16, 32, 1, batch_first=True)
         ])
         self.lstm_decoder = nn.ModuleList([
-            nn.LSTM(1, 32, 1, batch_first=True)
+            nn.LSTM(2, 32, 1, batch_first=True)
         ])
         self.output_linear = nn.Sequential(nn.Linear(32, 2))
 
@@ -92,7 +93,7 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
 
 
 
-    def forward(self, camera_data, metadata):
+    def forward(self, camera_data, metadata, controls=None):
         """Forward-propagates data through SqueezeNetTimeLSTM"""
         batch_size = camera_data.size(0)
         metadata = metadata.contiguous().view(-1, 8, 23, 41)
@@ -109,7 +110,7 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
             if last_hidden_cell:
                 # last_hidden_cell[0] = last_hidden_cell[0].contiguous().view(batch_size, -1, 256)
                 # last_hidden_cell[1] = last_hidden_cell[1].contiguous().view(batch_size, -1, 256)
-                net_output = lstm(self.get_decoder_seq(batch_size, self.n_steps), last_hidden_cell)[0]
+                net_output = lstm(self.get_decoder_seq(controls), last_hidden_cell)[0]
                 last_hidden_cell = None
             else:
                 net_output = lstm(net_output)[0]
@@ -117,8 +118,11 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
         net_output = net_output.contiguous().view(batch_size, -1, 2)
         return net_output
 
-    def get_decoder_seq(self, batch_size, timesteps):
-        decoder_input_seq = Variable(torch.zeros(batch_size, timesteps, 1))
+    def get_decoder_seq(self, controls):
+        controls = controls.clone()
+        controls[:,1:,:] = controls[:,0:controls.size(1)-1,:]
+        controls[:,0,:] = 0
+        decoder_input_seq = Variable(controls)
         return decoder_input_seq.cuda() if self.is_cuda else decoder_input_seq
 
     def cuda(self, device_id=None):
@@ -133,8 +137,9 @@ def unit_test():
     test_net = SqueezeNetTimeLSTM(6, 20)
     test_net_output = test_net(
         Variable(torch.randn(1, 36, 94, 168)),
-        Variable(torch.randn(1, 6, 8, 23, 41)))
-    sizes = [1, 20, 2]
+        Variable(torch.randn(1, 6, 8, 23, 41)),
+        torch.randn(1, 10, 2))
+    sizes = [1, 10, 2]
     assert(all(test_net_output.size(i) == sizes[i] for i in range(len(sizes))))
     logging.debug('Net Test Output = {}'.format(test_net_output))
     logging.debug('Network was Unit Tested')
