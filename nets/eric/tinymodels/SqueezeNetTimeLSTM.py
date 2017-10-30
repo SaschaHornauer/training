@@ -122,7 +122,7 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
             for lstm in self.lstm_decoder:
                 for i in range(self.n_steps):
                     if i == 0:
-                        lstm_output, last_hidden_cell = lstm(Variable(torch.zeros(batch_size, 1, 2)).cuda(), last_hidden_cell)
+                        lstm_output, last_hidden_cell = lstm(Variable(torch.zeros(batch_size, 1, 2).cuda()), last_hidden_cell)
                     else:
                         lstm_output, last_hidden_cell = lstm(net_output[:,i-1,:].unsqueeze(1).cuda(), last_hidden_cell)
                     linear = self.output_linear(lstm_output.contiguous().view(-1, 32))
