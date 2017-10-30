@@ -121,8 +121,7 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
             net_output = self.output_linear(net_output.contiguous().view(-1, 32))
         else:
             print 'generating'
-            net_output = Variable(torch.zeros(batch_size, self.n_steps, 2))
-            net_output = net_output.cuda() if self.is_cuda else net_output
+            list_outputs = []
             for lstm in self.lstm_decoder:
                 for i in range(self.n_steps):
                     if i == 0:
@@ -130,10 +129,10 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
                         init_input = init_input.cuda() if self.is_cuda else init_input
                         lstm_output, last_hidden_cell = lstm(init_input, last_hidden_cell)
                     else:
-                        lstm_output, last_hidden_cell = lstm(net_output[:,i-1,:].unsqueeze(1), last_hidden_cell)
+                        lstm_output, last_hidden_cell = lstm(list_outputs[i-1], last_hidden_cell)
                     linear = self.output_linear(lstm_output.contiguous().view(-1, 32))
-                    net_output[:, i, :] = linear
-        net_output = net_output.contiguous().view(batch_size, -1, 2)
+                    list_outputs.append(linear.unsqueeze(1))
+        net_output = torch.cat(list_outputs, 1).contiguous().view(batch_size, -1, 2)
         return net_output
 
     def get_decoder_seq(self, controls):
