@@ -154,13 +154,13 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
 
 def unit_test():
     """Tests SqueezeNetTimeLSTM for size constitency"""
-    test_net = SqueezeNetTimeLSTM(6, 3)
+    test_net = SqueezeNetTimeLSTM(6, 1)
     test_net_output = test_net(
         Variable(torch.randn(1, 6*6, 94, 168)),
         Variable(torch.randn(1, 6, 8, 23, 41)),
-        torch.randn(1, 3, 2)
+        torch.randn(1, 1, 2)
     )
-    sizes = [1, 3, 2]
+    sizes = [1, 1, 2]
     assert(all(test_net_output.size(i) == sizes[i] for i in range(len(sizes))))
     logging.debug('Net Test Output = {}'.format(test_net_output))
     logging.debug('Network was Unit Tested')

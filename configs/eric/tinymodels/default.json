@@ -14,8 +14,8 @@
     "bias_sampling": false,
     "dataset": {
       "path": "/hostroot/home/ehou/trainingAll/training/data/train/",
-      "p_subsample": 0.0002,
-      "batch_size": 150,
+      "p_subsample": 0.0001,
+      "batch_size": 75,
       "shuffle": true,
       "train_ratio": 1.0
     }
@@ -26,9 +26,9 @@
     "shuffle": true,
     "dataset": {
       "path": "/hostroot/home/ehou/trainingAll/training/data/val/",
-      "batch_size": 150,
+      "batch_size": 75,
       "shuffle": true,
-      "train_ratio": 0.975
+      "train_ratio": 0.99
     }
   },
 
@@ -39,7 +39,7 @@
 
   "model": {
     "past_frames": 6,
-    "future_frames": 3,
+    "future_frames": 1,
     "frame_stride": 5,
     "step_stride": 2,
     "save_path": "./save/tinymodels/",

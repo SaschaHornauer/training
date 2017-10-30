@@ -18,6 +18,7 @@ import torch
 Net = importlib.import_module(config['model']['py_path']).Net
 
 iter_num = {'i': 0}
+mse_loss, linear_loss = torch.nn.MSELoss(), torch.nn.L1Loss()
 
 def iterate(net, loss_func, optimizer=None, input=None, truth=None, train=True):
     """
@@ -43,7 +44,8 @@ def iterate(net, loss_func, optimizer=None, input=None, truth=None, train=True):
     # Transform inputs into Variables for pytorch and run forward prop
     outputs = net(*input).cuda()
     truth = Variable(truth).cuda()
-    loss = loss_func(outputs, truth)
+    # loss = loss_func(outputs, truth)
+    loss = (mse_loss(outputs, truth) + linear_loss(outputs, truth)) / 2
 
     if not train:
         if iter_num['i'] % 20 == 0:
