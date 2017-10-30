@@ -39,7 +39,7 @@
 
   "model": {
     "past_frames": 6,
-    "future_frames": 1,
+    "future_frames": 3,
     "frame_stride": 5,
     "step_stride": 2,
     "save_path": "./save/tinymodels/",
