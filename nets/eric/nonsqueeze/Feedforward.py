@@ -16,7 +16,6 @@ class Feedforward(nn.Module):
         self.pre_metadata_features = nn.Sequential(
             nn.Conv2d(3 * 2 * n_frames, 12, kernel_size=3, stride=2),
             nn.ReLU(inplace=True),
-            nn.MaxPool2d(kernel_size=3, stride=2, ceil_mode=True),
             nn.Conv2d(12, 12, kernel_size=3, padding=1),
             nn.ReLU(inplace=True)
         )
@@ -33,6 +32,7 @@ class Feedforward(nn.Module):
             nn.ReLU(inplace=True),
             nn.Conv2d(24, 32, kernel_size=3, padding=1),
             nn.ReLU(inplace=True),
+            nn.MaxPool2d(kernel_size=3, stride=2, ceil_mode=True),
             nn.Conv2d(32, 32, kernel_size=3, padding=1),
             nn.ReLU(inplace=True)
         )
@@ -65,10 +65,10 @@ class Feedforward(nn.Module):
         return sum([reduce(lambda x, y: x * y, [dim for dim in p.size()], 1) for p in self.parameters()])
 
 def unit_test():
-    test_net = Feedforward(20, 6)
-    a = test_net(Variable(torch.randn(1, 36, 94, 168)),
+    test_net = Feedforward(1, 30)
+    a = test_net(Variable(torch.randn(1, 30*6, 94, 168)),
                  Variable(torch.randn(1, 8, 23, 41)))
-    sizes = [1, 20, 2]
+    sizes = [1, 1, 2]
     assert(all(a.size(i) == sizes[i] for i in range(len(sizes))))
     logging.debug('Net Test Output = {}'.format(a))
     logging.debug('Network was Unit Tested')

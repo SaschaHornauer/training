@@ -55,8 +55,7 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
         self.pre_metadata_features = nn.Sequential(
             nn.Conv2d(3 * 2, 16, kernel_size=3, stride=2),
             nn.ReLU(inplace=True),
-            nn.MaxPool2d(kernel_size=3, stride=2, ceil_mode=True),
-            Fire(16, 4, 8, 8),
+            Fire(16, 4, 8, 8)
         )
         self.post_metadata_features = nn.Sequential(
             Fire(16, 6, 12, 12),
@@ -66,22 +65,24 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
             nn.MaxPool2d(kernel_size=3, stride=2, ceil_mode=True),
             Fire(32, 12, 24, 24),
             Fire(48, 12, 24, 24),
+            nn.MaxPool2d(kernel_size=3, stride=2, ceil_mode=True),
             Fire(48, 16, 32, 32),
             Fire(64, 16, 32, 32),
         )
-        final_conv = nn.Conv2d(64, 8, kernel_size=1)
+        final_conv = nn.Conv2d(64, 24, kernel_size=1)
         self.pre_lstm_output = nn.Sequential(
-            nn.Dropout(0.75),
+            nn.Dropout(0.25),
             final_conv,
+            nn.ReLU(inplace=True),
             nn.AvgPool2d(kernel_size=5, stride=5),
         )
         self.lstm_encoder = nn.ModuleList([
-            nn.LSTM(16, 32, 1, batch_first=True)
+            nn.LSTM(24, 48, 1, batch_first=True)
         ])
         self.lstm_decoder = nn.ModuleList([
-            nn.LSTM(2, 32, 1, batch_first=True)
+            nn.LSTM(2, 48, 1, batch_first=True)
         ])
-        self.output_linear = nn.Sequential(nn.Linear(32, 2))
+        self.output_linear = nn.Sequential(nn.Linear(48, 2))
 
         for mod in self.modules():
             if hasattr(mod, 'weight') and hasattr(mod.weight, 'data'):
@@ -104,7 +105,7 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
         # net_output = torch.cat((net_output, metadata), 1)
         net_output = self.post_metadata_features(net_output)
         net_output = self.pre_lstm_output(net_output)
-        net_output = net_output.contiguous().view(batch_size, -1, 16)
+        net_output = net_output.contiguous().view(batch_size, -1, 24)
         for lstm in self.lstm_encoder:
             net_output, last_hidden_cell = lstm(net_output)
             last_hidden_cell = list(last_hidden_cell)
@@ -117,7 +118,7 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
                     last_hidden_cell = None
                 else:
                     net_output = lstm(net_output)[0]
-            net_output = self.output_linear(net_output.contiguous().view(-1, 32))
+            net_output = self.output_linear(net_output.contiguous().view(-1, 48))
         else:
             print 'generating'
             list_outputs = []
@@ -129,7 +130,7 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
                         lstm_output, last_hidden_cell = lstm(init_input, last_hidden_cell)
                     else:
                         lstm_output, last_hidden_cell = lstm(list_outputs[i-1], last_hidden_cell)
-                    linear = self.output_linear(lstm_output.contiguous().view(-1, 32))
+                    linear = self.output_linear(lstm_output.contiguous().view(-1, 48))
                     list_outputs.append(linear.unsqueeze(1))
             net_output = torch.cat(list_outputs, 1)
         net_output = net_output.contiguous().view(batch_size, -1, 2)
@@ -138,7 +139,8 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
 
     def get_decoder_seq(self, controls):
         controls = controls.clone()
-        controls[:,1:,:] = controls[:,0:controls.size(1)-1,:]
+        if controls.size(1) > 1:
+            controls[:,1:,:] = controls[:,0:controls.size(1)-1,:]
         controls[:,0,:] = 0
         decoder_input_seq = Variable(controls)
         return decoder_input_seq.cuda() if self.is_cuda else decoder_input_seq
@@ -153,13 +155,13 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
 
 def unit_test():
     """Tests SqueezeNetTimeLSTM for size constitency"""
-    test_net = SqueezeNetTimeLSTM(6, 10)
+    test_net = SqueezeNetTimeLSTM(30, 1)
     test_net_output = test_net(
         Variable(torch.randn(1, 36, 94, 168)),
         Variable(torch.randn(1, 6, 8, 23, 41)),
-        torch.randn(1, 10, 2)
+        torch.randn(1, 1, 2)
     )
-    sizes = [1, 10, 2]
+    sizes = [1, 1, 2]
     assert(all(test_net_output.size(i) == sizes[i] for i in range(len(sizes))))
     logging.debug('Net Test Output = {}'.format(test_net_output))
     logging.debug('Network was Unit Tested')

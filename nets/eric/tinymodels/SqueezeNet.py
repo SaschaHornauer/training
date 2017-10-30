@@ -40,17 +40,17 @@ class SqueezeNet(nn.Module):
         self.pre_metadata_features = nn.Sequential(
             nn.Conv2d(3 * 2 * self.n_frames, 16, kernel_size=3, stride=2),
             nn.ReLU(inplace=True),
-            nn.MaxPool2d(kernel_size=3, stride=2, ceil_mode=True),
             Fire(16, 4, 8, 8)
         )
         self.post_metadata_features = nn.Sequential(
-            Fire(24, 6, 12, 12),
+            Fire(16, 6, 12, 12),
             nn.MaxPool2d(kernel_size=3, stride=2, ceil_mode=True),
             Fire(24, 8, 16, 16),
             Fire(32, 8, 16, 16),
             nn.MaxPool2d(kernel_size=3, stride=2, ceil_mode=True),
             Fire(32, 12, 24, 24),
             Fire(48, 12, 24, 24),
+            nn.MaxPool2d(kernel_size=3, stride=2, ceil_mode=True),
             Fire(48, 16, 32, 32),
             Fire(64, 16, 32, 32)
         )
@@ -73,7 +73,7 @@ class SqueezeNet(nn.Module):
 
     def forward(self, x, metadata):
         x = self.pre_metadata_features(x)
-        x = torch.cat((x, metadata), 1)
+        # x = torch.cat((x, metadata), 1)
         x = self.post_metadata_features(x)
         x = self.final_output(x)
         x = x.view(x.size(0), -1, 2)
@@ -83,10 +83,10 @@ class SqueezeNet(nn.Module):
         return sum([reduce(lambda x, y: x * y, [dim for dim in p.size()], 1) for p in self.parameters()])
 
 def unit_test():
-    test_net = SqueezeNet(20, 6)
-    a = test_net(Variable(torch.randn(1, 36, 94, 168)),
+    test_net = SqueezeNet(1, 30)
+    a = test_net(Variable(torch.randn(1, 30*6, 94, 168)),
                  Variable(torch.randn(1, 8, 23, 41)))
-    sizes = [1, 20, 2]
+    sizes = [1, 1, 2]
     assert(all(a.size(i) == sizes[i] for i in range(len(sizes))))
     logging.debug('Net Test Output = {}'.format(a))
     logging.debug('Network was Unit Tested')
