@@ -38,7 +38,7 @@ class NvidiaMetadata(nn.Module):
 
     def forward(self, x, metadata):
         x = self.pre_metadata(x)
-        x = torch.cat([x, metadata], 1)
+        # x = torch.cat([x, metadata], 1)
         x = self.post_metadata(x)
         x = x.view(x.size(0), -1)
         x = self.fcl(x)

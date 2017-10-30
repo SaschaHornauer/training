@@ -15,7 +15,7 @@ import random
 
 class Dataset(data.Dataset):
 
-    def __init__(self, data_folder_dir, require_one=[], ignore_list=[], stride=10, max_len=-1,
+    def __init__(self, data_folder_dir, require_one=[], ignore_list=[], stride=10, frame_stride=1, max_len=-1,
                  train_ratio=0.9, seed=None, nframes=2, nsteps=10, separate_frames=False,
                  metadata_shape=[], p_exclude_run=0., cache_file=None):
         self.max_len = max_len
@@ -115,6 +115,7 @@ class Dataset(data.Dataset):
             self.col_gradient[:, col] = col / 167.
 
         self.stride = stride
+        self.frame_stride = frame_stride
 
         self.seed = seed or self.total_length
         self.subsampled_train_part = None
@@ -133,7 +134,7 @@ class Dataset(data.Dataset):
 
         list_camera_input = []
 
-        for t in range(self.nframes):
+        for t in range(0, self.nframes, self.frame_stride):
             for camera in ('left', 'right'):
                 list_camera_input.append(torch.from_numpy(data_file[camera][t]))
                 camera_data = torch.cat(list_camera_input, 2)
