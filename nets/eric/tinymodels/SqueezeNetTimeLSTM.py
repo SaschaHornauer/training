@@ -107,7 +107,7 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
         for lstm in self.lstm_encoder:
             net_output, last_hidden_cell = lstm(net_output)
             last_hidden_cell = list(last_hidden_cell)
-        should_generate = random.random() < 0.6667
+        should_generate = random.random() < 0.5
         if (controls is not None) and (not should_generate):
             for lstm in self.lstm_decoder:
                 if last_hidden_cell:
