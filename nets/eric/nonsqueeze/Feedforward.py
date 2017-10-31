@@ -32,15 +32,15 @@ class Feedforward(nn.Module):
             nn.ReLU(inplace=True),
             nn.Conv2d(24, 32, kernel_size=3, padding=1),
             nn.ReLU(inplace=True),
+            nn.Dropout2d(p=0.5),
             nn.MaxPool2d(kernel_size=3, stride=2, ceil_mode=True),
             nn.Conv2d(32, 32, kernel_size=3, padding=1),
             nn.ReLU(inplace=True)
         )
         final_conv = nn.Conv2d(32, self.n_steps, kernel_size=1)
         self.final_output = nn.Sequential(
-            nn.Dropout(p=0.5),
+            nn.Dropout2d(p=0.5),
             final_conv,
-            nn.Dropout(p=0.5),
             nn.ReLU(inplace=True),
             nn.Dropout(p=0.5),
             nn.AvgPool2d(kernel_size=5, stride=5),

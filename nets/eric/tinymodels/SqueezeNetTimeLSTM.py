@@ -67,12 +67,12 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
             Fire(48, 12, 24, 24),
             nn.MaxPool2d(kernel_size=3, stride=2, ceil_mode=True),
             Fire(48, 16, 32, 32),
-            nn.Dropout(0.5),
+            nn.Dropout2d(0.5),
             Fire(64, 16, 32, 32),
         )
         final_conv = nn.Conv2d(64, 8, kernel_size=1)
         self.pre_lstm_output = nn.Sequential(
-            nn.Dropout(0.5),
+            nn.Dropout2d(0.5),
             final_conv,
             nn.ReLU(inplace=True),
             nn.AvgPool2d(kernel_size=5, stride=5),
@@ -111,7 +111,6 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
         for lstm in self.lstm_encoder:
             net_output, last_hidden_cell = lstm(net_output)
             last_hidden_cell = list(last_hidden_cell)
-            print(last_hidden_cell[1].size())
         if (controls is not None): #and (not self.is_generating):
             for lstm in self.lstm_decoder:
                 if last_hidden_cell:

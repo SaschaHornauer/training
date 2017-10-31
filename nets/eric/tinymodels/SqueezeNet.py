@@ -52,12 +52,12 @@ class SqueezeNet(nn.Module):
             Fire(48, 12, 24, 24),
             nn.MaxPool2d(kernel_size=3, stride=2, ceil_mode=True),
             Fire(48, 16, 32, 32),
-            nn.Dropout(p=0.5),
+            nn.Dropout2d(p=0.5),
             Fire(64, 16, 32, 32)
         )
         final_conv = nn.Conv2d(64, self.n_steps, kernel_size=1)
         self.final_output = nn.Sequential(
-            nn.Dropout(p=0.5),
+            nn.Dropout2d(p=0.5),
             final_conv,
             nn.ReLU(inplace=True),
             nn.AvgPool2d(kernel_size=5, stride=5),
