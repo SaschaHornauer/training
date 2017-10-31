@@ -57,6 +57,8 @@ class Feedforward(nn.Module):
                     init.kaiming_normal(mod.weight.data)
                 elif len(mod.weight.data.size()) >= 2:
                     init.xavier_normal(mod.weight.data)
+                else:
+                    init.normal(mod.weight.data)
             if hasattr(mod, 'bias') and hasattr(mod.bias, 'data'):
                 init.normal(mod.bias.data, 0, 0.0001)
 
