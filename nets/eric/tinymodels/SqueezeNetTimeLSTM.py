@@ -56,7 +56,7 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
             nn.Conv2d(3 * 2, 16, kernel_size=3, stride=2),
             nn.ReLU(inplace=True),
             Fire(16, 4, 8, 8),
-            nn.Dropout2d(p=0.5),
+            nn.Dropout2d(p=0.25),
         )
         self.post_metadata_features = nn.Sequential(
             Fire(16, 6, 12, 12),
@@ -64,13 +64,13 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
             Fire(24, 8, 16, 16),
             Fire(32, 8, 16, 16),
             nn.MaxPool2d(kernel_size=3, stride=2, ceil_mode=True),
-            nn.Dropout2d(p=0.5),
+            nn.Dropout2d(p=0.25),
             Fire(32, 12, 24, 24),
             Fire(48, 12, 24, 24),
             nn.MaxPool2d(kernel_size=3, stride=2, ceil_mode=True),
             Fire(48, 16, 32, 32),
             Fire(64, 16, 32, 32),
-            nn.Dropout2d(p=0.5),
+            nn.Dropout2d(p=0.25),
         )
         final_conv = nn.Conv2d(64, 8, kernel_size=1)
         self.pre_lstm_output = nn.Sequential(

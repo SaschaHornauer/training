@@ -18,7 +18,7 @@ class Feedforward(nn.Module):
             nn.ReLU(inplace=True),
             nn.Conv2d(12, 12, kernel_size=3, padding=1),
             nn.ReLU(inplace=True),
-            nn.Dropout2d(p=0.5),
+            nn.Dropout2d(p=0.25),
         )
         self.post_metadata_features = nn.Sequential(
             nn.Conv2d(12, 16, kernel_size=3, padding=1),
@@ -29,7 +29,7 @@ class Feedforward(nn.Module):
             nn.Conv2d(16, 24, kernel_size=3, padding=1),
             nn.ReLU(inplace=True),
             nn.MaxPool2d(kernel_size=3, stride=2, ceil_mode=True),
-            nn.Dropout2d(p=0.5),
+            nn.Dropout2d(p=0.25),
         )
         self.pre_final = nn.Sequential(
             nn.Conv2d(24, 24, kernel_size=3, padding=1),
@@ -39,7 +39,7 @@ class Feedforward(nn.Module):
             nn.MaxPool2d(kernel_size=3, stride=2, ceil_mode=True),
             nn.Conv2d(32, 32, kernel_size=3, padding=1),
             nn.ReLU(inplace=True),
-            nn.Dropout2d(p=0.5)
+            nn.Dropout2d(p=0.25)
         )
         self.norm0 = nn.BatchNorm2d(12)
         self.norm1 = nn.BatchNorm2d(24)
