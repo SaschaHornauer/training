@@ -67,22 +67,24 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
             Fire(48, 12, 24, 24),
             nn.MaxPool2d(kernel_size=3, stride=2, ceil_mode=True),
             Fire(48, 16, 32, 32),
+            nn.Dropout(0.5),
             Fire(64, 16, 32, 32),
         )
-        final_conv = nn.Conv2d(64, 12, kernel_size=1)
+        final_conv = nn.Conv2d(64, 8, kernel_size=1)
         self.pre_lstm_output = nn.Sequential(
-            nn.Dropout(0.33),
+            nn.Dropout(0.5),
             final_conv,
             nn.ReLU(inplace=True),
             nn.AvgPool2d(kernel_size=5, stride=5),
         )
         self.lstm_encoder = nn.ModuleList([
-            nn.LSTM(24, 48, 1, batch_first=True)
+            nn.LSTM(16, 32, 2, batch_first=True)
         ])
         self.lstm_decoder = nn.ModuleList([
-            nn.LSTM(2, 48, 1, batch_first=True)
+            nn.LSTM(2, 32, 2, batch_first=True)
         ])
-        self.output_linear = nn.Sequential(nn.Linear(48, 2), nn.Sigmoid())
+        self.output_linear = nn.Sequential(nn.Linear(32, 2),
+                                           nn.Sigmoid())
 
         for mod in self.modules():
             if hasattr(mod, 'weight') and hasattr(mod.weight, 'data'):
@@ -105,11 +107,11 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
         # net_output = torch.cat((net_output, metadata), 1)
         net_output = self.post_metadata_features(net_output)
         net_output = self.pre_lstm_output(net_output)
-        net_output = net_output.contiguous().view(batch_size, -1, 24)
+        net_output = net_output.contiguous().view(batch_size, -1, 16)
         for lstm in self.lstm_encoder:
             net_output, last_hidden_cell = lstm(net_output)
             last_hidden_cell = list(last_hidden_cell)
-
+            print(last_hidden_cell[1].size())
         if (controls is not None): #and (not self.is_generating):
             for lstm in self.lstm_decoder:
                 if last_hidden_cell:
@@ -118,7 +120,7 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
                 else:
                     net_output = lstm(net_output)[0]
             # net_output = last_hidden_cell[0]
-            net_output = self.output_linear(net_output.contiguous().view(-1, 48))
+            net_output = self.output_linear(net_output.contiguous().view(-1, 32))
         else:
             list_outputs = []
             for lstm in self.lstm_decoder:
@@ -128,8 +130,9 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
                         init_input = init_input.cuda() if self.is_cuda else init_input
                         lstm_output, last_hidden_cell = lstm(init_input, last_hidden_cell)
                     else:
-                        lstm_output, last_hidden_cell = lstm(list_outputs[i-1], last_hidden_cell)
-                    linear = self.output_linear(lstm_output.contiguous().view(-1, 48))
+                        for lstm in self.lstm_decoder:
+                            lstm_output, last_hidden_cell = lstm(list_outputs[i-1], last_hidden_cell)
+                    linear = self.output_linear(lstm_output.contiguous().view(-1, 32))
                     list_outputs.append(linear.unsqueeze(1))
             net_output = torch.cat(list_outputs, 1)
         net_output = net_output.contiguous().view(batch_size, -1, 2)
@@ -156,11 +159,12 @@ def unit_test():
     """Tests SqueezeNetTimeLSTM for size constitency"""
     test_net = SqueezeNetTimeLSTM(6, 1)
     test_net_output = test_net(
-        Variable(torch.randn(1, 6*6, 94, 168)),
-        Variable(torch.randn(1, 6, 8, 23, 41)),
-        torch.randn(1, 1, 2)
+        Variable(torch.randn(2, 6*6, 94, 168)),
+        Variable(torch.randn(2, 6, 8, 23, 41))
+        # ,
+        # torch.randn(1, 1, 2)
     )
-    sizes = [1, 1, 2]
+    sizes = [2, 1, 2]
     assert(all(test_net_output.size(i) == sizes[i] for i in range(len(sizes))))
     logging.debug('Net Test Output = {}'.format(test_net_output))
     logging.debug('Network was Unit Tested')

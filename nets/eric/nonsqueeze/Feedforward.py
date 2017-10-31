@@ -40,7 +40,9 @@ class Feedforward(nn.Module):
         self.final_output = nn.Sequential(
             nn.Dropout(p=0.5),
             final_conv,
+            nn.Dropout(p=0.5),
             nn.ReLU(inplace=True),
+            nn.Dropout(p=0.5),
             nn.AvgPool2d(kernel_size=5, stride=5),
             nn.Sigmoid()
         )

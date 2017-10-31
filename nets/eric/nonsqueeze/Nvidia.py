@@ -28,7 +28,12 @@ class Nvidia(nn.Module):
         )
         self.fcl = nn.Sequential(
             nn.Dropout(0.5),
-            nn.Linear(768, 100),
+            nn.Linear(768, 250),
+            nn.ReLU(),
+            nn.Dropout(p=0.5),
+            nn.Linear(250, 100),
+            nn.ReLU(),
+            nn.Dropout(p=0.5),
             nn.Linear(100, 2 * self.n_steps),
             nn.Sigmoid()
         )
