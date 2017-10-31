@@ -12,6 +12,7 @@ class Fire(nn.Module):
     def __init__(self, inplanes, squeeze_planes,
                  expand1x1_planes, expand3x3_planes):
         super(Fire, self).__init__()
+        self.norm = torch.nn.BatchNorm2d(expand1x1_planes + expand3x3_planes)
         self.inplanes = inplanes
         self.squeeze = nn.Conv2d(inplanes, squeeze_planes, kernel_size=1)
         self.squeeze_activation = nn.ReLU(inplace=True)
@@ -24,10 +25,10 @@ class Fire(nn.Module):
 
     def forward(self, x):
         x = self.squeeze_activation(self.squeeze(x))
-        return torch.cat([
+        return self.norm(torch.cat([
             self.expand1x1_activation(self.expand1x1(x)),
             self.expand3x3_activation(self.expand3x3(x))
-        ], 1)
+        ], 1))
 
 
 class SqueezeNet(nn.Module):
@@ -68,10 +69,10 @@ class SqueezeNet(nn.Module):
             if hasattr(mod, 'weight') and hasattr(mod.weight, 'data'):
                 if isinstance(mod, nn.Conv2d):
                     init.kaiming_normal(mod.weight.data)
-                else:
+                elif len(mod.weight.data.size()) >= 2:
                     init.xavier_normal(mod.weight.data)
             if hasattr(mod, 'bias') and hasattr(mod.bias, 'data'):
-                init.normal(mod.bias.data, 0, 0.1)
+                init.normal(mod.bias.data, 0, 0.0001)
 
     def forward(self, x, metadata):
         x = self.pre_metadata_features(x)

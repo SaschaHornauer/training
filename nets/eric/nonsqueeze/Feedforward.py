@@ -28,6 +28,8 @@ class Feedforward(nn.Module):
             nn.Conv2d(16, 24, kernel_size=3, padding=1),
             nn.ReLU(inplace=True),
             nn.MaxPool2d(kernel_size=3, stride=2, ceil_mode=True),
+        )
+        self.pre_final = nn.Sequential(
             nn.Conv2d(24, 24, kernel_size=3, padding=1),
             nn.ReLU(inplace=True),
             nn.Conv2d(24, 32, kernel_size=3, padding=1),
@@ -37,6 +39,9 @@ class Feedforward(nn.Module):
             nn.Conv2d(32, 32, kernel_size=3, padding=1),
             nn.ReLU(inplace=True)
         )
+        self.norm0 = nn.BatchNorm2d(12)
+        self.norm1 = nn.BatchNorm2d(24)
+        self.norm2 = nn.BatchNorm2d(32)
         final_conv = nn.Conv2d(32, self.n_steps, kernel_size=1)
         self.final_output = nn.Sequential(
             nn.Dropout2d(p=0.5),
@@ -50,15 +55,16 @@ class Feedforward(nn.Module):
             if hasattr(mod, 'weight') and hasattr(mod.weight, 'data'):
                 if isinstance(mod, nn.Conv2d):
                     init.kaiming_normal(mod.weight.data)
-                else:
+                elif len(mod.weight.data.size()) >= 2:
                     init.xavier_normal(mod.weight.data)
             if hasattr(mod, 'bias') and hasattr(mod.bias, 'data'):
-                init.normal(mod.bias.data, 0, 0.1)
+                init.normal(mod.bias.data, 0, 0.0001)
 
     def forward(self, x, metadata):
-        x = self.pre_metadata_features(x)
+        x = self.norm0(self.pre_metadata_features(x))
         # x = torch.cat((x, metadata), 1)
-        x = self.post_metadata_features(x)
+        x = self.norm1(self.post_metadata_features(x))
+        x = self.norm2(self.pre_final(x))
         x = self.final_output(x)
         x = x.view(x.size(0), -1, 2)
         return x

@@ -42,10 +42,10 @@ class Nvidia(nn.Module):
             if hasattr(mod, 'weight') and hasattr(mod.weight, 'data'):
                 if isinstance(mod, nn.Conv2d):
                     init.kaiming_normal(mod.weight.data)
-                else:
+                elif len(mod.weight.data.size()) >= 2:
                     init.xavier_normal(mod.weight.data)
             if hasattr(mod, 'bias') and hasattr(mod.bias, 'data'):
-                init.normal(mod.bias.data, 0, 0.1)
+                init.normal(mod.bias.data, 0, 0.0001)
 
 
     def forward(self, x, metadata):
