@@ -64,23 +64,25 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
             nn.LeakyReLU(negative_slope=0.2, inplace=True),
             nn.Conv2d(16, 16, kernel_size=3, stride=2),
             nn.LeakyReLU(negative_slope=0.2, inplace=True),
-            nn.MaxPool2d(kernel_size=3, stride=2, ceil_mode=True),
+            nn.AvgPool2d(kernel_size=3, stride=2, ceil_mode=True),
 
             Fire(16, 4, 8, 8),
             Fire(16, 12, 12, 12),
             Fire(24, 16, 16, 16),
-            nn.MaxPool2d(kernel_size=3, stride=2, ceil_mode=True),
+            nn.AvgPool2d(kernel_size=3, stride=2, ceil_mode=True),
             Fire(32, 16, 16, 16),
             Fire(32, 24, 24, 24),
             nn.Dropout2d(p=0.5),
             Fire(48, 24, 24, 24),
             Fire(48, 32, 32, 32),
-            nn.MaxPool2d(kernel_size=3, stride=2, ceil_mode=True),
+            nn.AvgPool2d(kernel_size=3, stride=2, ceil_mode=True),
             Fire(64, 32, 32, 32),
             nn.Conv2d(64, 32, kernel_size=3, stride=2, padding=1),
             nn.LeakyReLU(negative_slope=0.2, inplace=True),
+            nn.Dropout2d(p=0.5),
             nn.Conv2d(32, 16, kernel_size=3, stride=2, padding=1),
             nn.LeakyReLU(negative_slope=0.2, inplace=True),
+            nn.Dropout2d(p=0.5),
             nn.Conv2d(16, 16, kernel_size=3, stride=2, padding=1)
         )
         self.lstm_encoder = nn.ModuleList([
@@ -94,6 +96,7 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
                                            nn.Dropout(0.5),
                                            nn.Linear(32, 16),
                                            nn.LeakyReLU(negative_slope=0.2, inplace=True),
+                                           nn.Dropout(0.5),
                                            nn.Linear(16, 2),
                                            nn.Sigmoid())
 

@@ -29,7 +29,7 @@ class Feedforward(nn.Module):
             nn.Conv2d(16, 24, kernel_size=3, padding=1),
             nn.LeakyReLU(negative_slope=0.2, inplace=True),
             nn.MaxPool2d(kernel_size=3, stride=2, ceil_mode=True),
-            nn.Dropout2d(p=0.25),
+            nn.Dropout2d(p=0.5),
         )
         self.pre_final = nn.Sequential(
             nn.Conv2d(24, 24, kernel_size=3, padding=1),
@@ -39,7 +39,7 @@ class Feedforward(nn.Module):
             nn.MaxPool2d(kernel_size=3, stride=2, ceil_mode=True),
             nn.Conv2d(32, 32, kernel_size=3, padding=1),
             nn.LeakyReLU(negative_slope=0.2, inplace=True),
-            nn.Dropout2d(p=0.25)
+            nn.Dropout2d(p=0.5)
         )
         self.norm0 = nn.BatchNorm2d(12)
         self.norm1 = nn.BatchNorm2d(24)
@@ -47,8 +47,10 @@ class Feedforward(nn.Module):
         self.final_output = nn.Sequential(
             nn.Conv2d(32, 24, kernel_size=3, stride=2, padding=1),
             nn.ReLU(),
+            nn.Dropout2d(p=0.5),
             nn.Conv2d(24, 12, kernel_size=3, stride=2, padding=1),
             nn.ReLU(),
+            nn.Dropout2d(p=0.5),
             nn.Conv2d(12, self.n_steps, kernel_size=3, stride=2, padding=1),
             nn.Sigmoid()
         )

@@ -99,7 +99,8 @@ def main():
             os.path.join(config['model']['save_path'], config['model']['name'] + "epoch%02d.weights" % (config['training']['start_epoch'] - 1,)))
         net.load_state_dict(save_data)
         net = net.cuda()
-    optimizer = torch.optim.Adam(net.parameters())
+    optimizer = torch.optim.Adam(net.parameters(), lr=config['training']['learning_rate']) \
+        if config['training']['learning_rate'] else torch.optim.Adam(net.parameters())
 
     for epoch in range(config['training']['start_epoch'], config['training']['num_epochs']):
         try:
