@@ -199,42 +199,44 @@ class Dataset(data.Dataset):
 
     def get_train_loader(self, p_subsample=None, seed=None, *args, **kwargs):
         remove_train, train_part = set(), set(self.train_part or self.get_train_partition())
-        control_bins = [[0 for __ in range(0, 4)] for _ in range(0, 4)]
-
-        if self.train_class_probs and self.controls:
-            pass
-        elif self.cache_file:
-            try:
-                js = json.load(open(self.cache_file, 'r'))
-                self.train_class_probs, self.controls, self.num_cache_points, self.min_cache_points = js[0], js[1], js[2], js[3]
-            except Exception as e:
-                print(e)
-                print(self.cache_file)
-                print 'starting binning'
-                _ = 0
-                for i in train_part:
-                    run_idx, t = self.create_map(i)
-                    steer = int(float(self.run_files[run_idx]['metadata']['steer'][t]) / 25)
-                    motor = int(float(self.run_files[run_idx]['metadata']['motor'][t]) / 25)
-                    self.controls[str(i)] = (steer, motor)
-                    control_bins[steer][motor] += 1
-                    if _ % 10000 == 0:
-                        print(str(_) + ' binned')
-                    _ += 1
-                self.num_cache_points = sum([sum(c) for c in control_bins])
-                self.min_cache_points = min([min([c2 for c2 in c if c2 > 1000]) for c in control_bins if c > 1000])
-                self.train_class_probs = [[self.min_cache_points / (c + 1e-32) for c in _] for _ in control_bins]
-                print 'ending binning'
-                json.dump([self.train_class_probs, self.controls, self.num_cache_points, self.min_cache_points], open(self.cache_file, 'w'))
-        _ = 0
-        random.seed(seed)
+        # control_bins = [[0 for __ in range(0, 4)] for _ in range(0, 4)]
+        #
+        # if self.train_class_probs and self.controls:
+        #     pass
+        # elif self.cache_file:
+        #     try:
+        #         js = json.load(open(self.cache_file, 'r'))
+        #         self.train_class_probs, self.controls, self.num_cache_points, self.min_cache_points = js[0], js[1], js[2], js[3]
+        #     except Exception as e:
+        #         print(e)
+        #         print(self.cache_file)
+        #         print 'starting binning'
+        #         _ = 0
+        #         for i in train_part:
+        #             run_idx, t = self.create_map(i)
+        #             steer = int(float(self.run_files[run_idx]['metadata']['steer'][t]) / 25)
+        #             motor = int(float(self.run_files[run_idx]['metadata']['motor'][t]) / 25)
+        #             self.controls[str(i)] = (steer, motor)
+        #             control_bins[steer][motor] += 1
+        #             if _ % 10000 == 0:
+        #                 print(str(_) + ' binned')
+        #             _ += 1
+        #         self.num_cache_points = sum([sum(c) for c in control_bins])
+        #         self.min_cache_points = min([min([c2 for c2 in c if c2 > 1000]) for c in control_bins if c > 1000])
+        #         self.train_class_probs = [[self.min_cache_points / (c + 1e-32) for c in _] for _ in control_bins]
+        #         print 'ending binning'
+        #         json.dump([self.train_class_probs, self.controls, self.num_cache_points, self.min_cache_points], open(self.cache_file, 'w'))
+        # _ = 0
+        # random.seed(seed)
         for i in train_part:
-            steer, motor = self.controls[str(i)][0], self.controls[str(i)][1]
-            if random.random() > p_subsample * (self.num_cache_points / (8 * self.min_cache_points) * self.train_class_probs[steer][motor]):
+            # steer, motor = self.controls[str(i)][0], self.controls[str(i)][1]
+            # if random.random() > p_subsample * (self.num_cache_points / (8 * self.min_cache_points) * self.train_class_probs[steer][motor]):
+            #     remove_train.add(i)
+            # if _ % 100000 == 0:
+            #     print ('Trimming ' + str(_))
+            # _ += 1
+            if random.random() > p_subsample:
                 remove_train.add(i)
-            if _ % 100000 == 0:
-                print ('Trimming ' + str(_))
-            _ += 1
         for i in remove_train:
             train_part.remove(i)
 
