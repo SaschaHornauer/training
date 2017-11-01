@@ -55,34 +55,36 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
         self.pre_metadata_features = nn.Sequential(
             nn.Conv2d(3 * 2, 16, kernel_size=3, stride=2),
             nn.ReLU(inplace=True),
-            Fire(16, 4, 8, 8),
+            Fire(16, 8, 8, 8),
             nn.Dropout2d(p=0.25),
         )
         self.post_metadata_features = nn.Sequential(
-            Fire(16, 6, 12, 12),
+            Fire(16, 12, 12, 12),
             nn.MaxPool2d(kernel_size=3, stride=2, ceil_mode=True),
-            Fire(24, 8, 16, 16),
-            Fire(32, 8, 16, 16),
+            Fire(24, 16, 16, 16),
+            Fire(32, 16, 16, 16),
             nn.MaxPool2d(kernel_size=3, stride=2, ceil_mode=True),
             nn.Dropout2d(p=0.25),
-            Fire(32, 12, 24, 24),
-            Fire(48, 12, 24, 24),
+            Fire(32, 24, 24, 24),
+            Fire(48, 24, 24, 24),
             nn.MaxPool2d(kernel_size=3, stride=2, ceil_mode=True),
-            Fire(48, 16, 32, 32),
-            Fire(64, 16, 32, 32),
+            Fire(48, 32, 32, 32),
+            Fire(64, 32, 32, 32),
             nn.Dropout2d(p=0.25),
         )
-        final_conv = nn.Conv2d(64, 8, kernel_size=1)
         self.pre_lstm_output = nn.Sequential(
-            final_conv,
-            nn.ReLU(inplace=True),
-            nn.AvgPool2d(kernel_size=5, stride=5),
+            nn.Conv2d(64, 32, kernel_size=3, stride=2, padding=1),
+            nn.ReLU(),
+            nn.Conv2d(32, 16, kernel_size=3, stride=2, padding=1),
+            nn.ReLU(),
+            nn.Conv2d(16, 8, kernel_size=3, stride=2, padding=1),
+            nn.ReLU()
         )
         self.lstm_encoder = nn.ModuleList([
-            nn.LSTM(16, 32, 2, batch_first=True)
+            nn.LSTM(16, 32, 1, batch_first=True)
         ])
         self.lstm_decoder = nn.ModuleList([
-            nn.LSTM(2, 32, 2, batch_first=True)
+            nn.LSTM(2, 32, 1, batch_first=True)
         ])
         self.output_linear = nn.Sequential(nn.Linear(32, 2),
                                            nn.Sigmoid())
@@ -96,7 +98,7 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
                 else:
                     init.normal(mod.weight.data)
             if hasattr(mod, 'bias') and hasattr(mod.bias, 'data'):
-                init.normal(mod.bias.data, 0, 0.0001)
+                init.normal(mod.bias.data, 0, 0.01)
         # self.is_generating = False
 
 
@@ -110,6 +112,7 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
         # net_output = torch.cat((net_output, metadata), 1)
         net_output = self.post_metadata_features(net_output)
         net_output = self.pre_lstm_output(net_output)
+        print(net_output.size())
         net_output = net_output.contiguous().view(batch_size, -1, 16)
         for lstm in self.lstm_encoder:
             net_output, last_hidden_cell = lstm(net_output)

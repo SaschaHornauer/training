@@ -47,7 +47,7 @@ class Nvidia(nn.Module):
                 else:
                     init.normal(mod.weight.data)
             if hasattr(mod, 'bias') and hasattr(mod.bias, 'data'):
-                init.normal(mod.bias.data, 0, 0.0001)
+                init.normal(mod.bias.data, 0, 0.01)
 
 
     def forward(self, x, metadata):

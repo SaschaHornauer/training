@@ -45,24 +45,25 @@ class SqueezeNet(nn.Module):
             nn.Dropout2d(p=0.25),
         )
         self.post_metadata_features = nn.Sequential(
-            Fire(16, 6, 12, 12),
+            Fire(16, 12, 12, 12),
             nn.MaxPool2d(kernel_size=3, stride=2, ceil_mode=True),
-            Fire(24, 8, 16, 16),
-            Fire(32, 8, 16, 16),
+            Fire(24, 16, 16, 16),
+            Fire(32, 16, 16, 16),
             nn.MaxPool2d(kernel_size=3, stride=2, ceil_mode=True),
             nn.Dropout2d(p=0.25),
-            Fire(32, 12, 24, 24),
-            Fire(48, 12, 24, 24),
+            Fire(32, 24, 24, 24),
+            Fire(48, 24, 24, 24),
             nn.MaxPool2d(kernel_size=3, stride=2, ceil_mode=True),
-            Fire(48, 16, 32, 32),
-            Fire(64, 16, 32, 32),
+            Fire(48, 32, 32, 32),
+            Fire(64, 32, 32, 32),
             nn.Dropout2d(p=0.25),
         )
-        final_conv = nn.Conv2d(64, self.n_steps, kernel_size=1)
         self.final_output = nn.Sequential(
-            final_conv,
-            nn.ReLU(inplace=True),
-            nn.AvgPool2d(kernel_size=5, stride=5),
+            nn.Conv2d(64, 24, kernel_size=3, stride=2, padding=1),
+            nn.ReLU(),
+            nn.Conv2d(24, 12, kernel_size=3, stride=2, padding=1),
+            nn.ReLU(),
+            nn.Conv2d(12, self.n_steps, kernel_size=3, stride=2, padding=1),
             nn.Sigmoid()
         )
 
@@ -75,7 +76,7 @@ class SqueezeNet(nn.Module):
                 else:
                     init.normal(mod.weight.data)
             if hasattr(mod, 'bias') and hasattr(mod.bias, 'data'):
-                init.normal(mod.bias.data, 0, 0.0001)
+                init.normal(mod.bias.data, 0, 0.01)
 
     def forward(self, x, metadata):
         x = self.pre_metadata_features(x)

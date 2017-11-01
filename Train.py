@@ -44,8 +44,8 @@ def iterate(net, loss_func, optimizer=None, input=None, truth=None, train=True):
     # Transform inputs into Variables for pytorch and run forward prop
     outputs = net(*input).cuda()
     truth = Variable(truth).cuda()
-    # loss = loss_func(outputs, truth)
-    loss = (mse_loss(outputs, truth) + linear_loss(outputs, truth)) / 2
+    loss = loss_func(outputs, truth)
+    # loss = (mse_loss(outputs, truth) + linear_loss(outputs, truth)) / 2
 
     if not train:
         if iter_num['i'] % 20 == 0:

@@ -44,11 +44,12 @@ class Feedforward(nn.Module):
         self.norm0 = nn.BatchNorm2d(12)
         self.norm1 = nn.BatchNorm2d(24)
         self.norm2 = nn.BatchNorm2d(32)
-        final_conv = nn.Conv2d(32, self.n_steps, kernel_size=1)
         self.final_output = nn.Sequential(
-            final_conv,
-            nn.ReLU(inplace=True),
-            nn.AvgPool2d(kernel_size=5, stride=5),
+            nn.Conv2d(32, 24, kernel_size=3, stride=2, padding=1),
+            nn.ReLU(),
+            nn.Conv2d(24, 12, kernel_size=3, stride=2, padding=1),
+            nn.ReLU(),
+            nn.Conv2d(12, self.n_steps, kernel_size=3, stride=2, padding=1),
             nn.Sigmoid()
         )
 
@@ -61,7 +62,7 @@ class Feedforward(nn.Module):
                 else:
                     init.normal(mod.weight.data)
             if hasattr(mod, 'bias') and hasattr(mod.bias, 'data'):
-                init.normal(mod.bias.data, 0, 0.0001)
+                init.normal(mod.bias.data, 0, 0.01)
 
     def forward(self, x, metadata):
         x = self.norm0(self.pre_metadata_features(x))
