@@ -23,21 +23,26 @@ class Fire(nn.Module):  # pylint: disable=too-few-public-methods
         self.norm = torch.nn.BatchNorm2d(expand1x1_planes + expand3x3_planes)
         self.inplanes = inplanes
         self.squeeze = nn.Conv2d(inplanes, squeeze_planes, kernel_size=1)
-        self.squeeze_activation = nn.ReLU(inplace=True)
+        self.squeeze_activation = nn.LeakyReLU(negative_slope=0.2, inplace=True)
         self.expand1x1 = nn.Conv2d(squeeze_planes, expand1x1_planes,
                                    kernel_size=1)
-        self.expand1x1_activation = nn.ReLU(inplace=True)
+        self.expand1x1_activation = nn.LeakyReLU(negative_slope=0.2, inplace=True)
         self.expand3x3 = nn.Conv2d(squeeze_planes, expand3x3_planes,
                                    kernel_size=3, padding=1)
-        self.expand3x3_activation = nn.ReLU(inplace=True)
+        self.expand3x3_activation = nn.LeakyReLU(negative_slope=0.2, inplace=True)
+        self.should_iterate = inplanes == (expand3x3_planes + expand1x1_planes)
 
     def forward(self, input_data):
         """Forward-propagates data through Fire module"""
         output_data = self.squeeze_activation(self.squeeze(input_data))
-        return self.norm(torch.cat([
+        output_data = torch.cat([
             self.expand1x1_activation(self.expand1x1(output_data)),
             self.expand3x3_activation(self.expand3x3(output_data))
-        ], 1))
+        ], 1)
+        output_data = output_data + input_data if self.should_iterate else output_data
+        output_data = self.norm(output_data)
+        return output_data
+
 
 
 class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
@@ -52,33 +57,34 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
 
         self.n_frames = n_frames
         self.n_steps = n_steps
-        self.pre_metadata_features = nn.Sequential(
-            nn.Conv2d(3 * 2, 16, kernel_size=3, stride=2),
-            nn.ReLU(inplace=True),
-            Fire(16, 8, 8, 8),
-            nn.Dropout2d(p=0.25),
-        )
-        self.post_metadata_features = nn.Sequential(
+        self.pre_lstm_output = nn.Sequential(
+            nn.Conv2d(6, 12, kernel_size=3, stride=1, padding=1),
+            nn.LeakyReLU(negative_slope=0.2, inplace=True),
+            nn.Conv2d(12, 16, kernel_size=3, stride=1, padding=1),
+            nn.LeakyReLU(negative_slope=0.2, inplace=True),
+            nn.Conv2d(16, 16, kernel_size=3, stride=2),
+            nn.LeakyReLU(negative_slope=0.2, inplace=True),
+            nn.MaxPool2d(kernel_size=3, stride=2, ceil_mode=True),
+
+            Fire(16, 4, 8, 8),
             Fire(16, 12, 12, 12),
-            nn.MaxPool2d(kernel_size=3, stride=2, ceil_mode=True),
             Fire(24, 16, 16, 16),
-            Fire(32, 16, 16, 16),
             nn.MaxPool2d(kernel_size=3, stride=2, ceil_mode=True),
             nn.Dropout2d(p=0.25),
+            Fire(32, 16, 16, 16),
             Fire(32, 24, 24, 24),
             Fire(48, 24, 24, 24),
-            nn.MaxPool2d(kernel_size=3, stride=2, ceil_mode=True),
             Fire(48, 32, 32, 32),
-            Fire(64, 32, 32, 32),
+            nn.MaxPool2d(kernel_size=3, stride=2, ceil_mode=True),
             nn.Dropout2d(p=0.25),
-        )
-        self.pre_lstm_output = nn.Sequential(
-            nn.Conv2d(64, 32, kernel_size=3, stride=2, padding=1),
-            nn.ReLU(),
-            nn.Conv2d(32, 16, kernel_size=3, stride=2, padding=1),
-            nn.ReLU(),
-            nn.Conv2d(16, 8, kernel_size=3, stride=2, padding=1),
-            nn.ReLU()
+            Fire(64, 32, 32, 32),
+            nn.Conv2d(64, 24, kernel_size=3, stride=2, padding=1),
+            nn.LeakyReLU(negative_slope=0.2, inplace=True),
+            nn.Dropout2d(p=0.25),
+            nn.Conv2d(24, 12, kernel_size=3, stride=2, padding=1),
+            nn.LeakyReLU(negative_slope=0.2, inplace=True),
+            nn.Dropout2d(p=0.25),
+            nn.Conv2d(12, 8, kernel_size=3, stride=2, padding=1)
         )
         self.lstm_encoder = nn.ModuleList([
             nn.LSTM(16, 32, 1, batch_first=True)
@@ -106,11 +112,7 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
     def forward(self, camera_data, metadata, controls=None):
         """Forward-propagates data through SqueezeNetTimeLSTM"""
         batch_size = camera_data.size(0)
-        # metadata = metadata.contiguous().view(-1, 8, 23, 41)
         net_output = camera_data.contiguous().view(-1, 6, 94, 168)
-        net_output = self.pre_metadata_features(net_output)
-        # net_output = torch.cat((net_output, metadata), 1)
-        net_output = self.post_metadata_features(net_output)
         net_output = self.pre_lstm_output(net_output)
         net_output = net_output.contiguous().view(batch_size, -1, 16)
         for lstm in self.lstm_encoder:

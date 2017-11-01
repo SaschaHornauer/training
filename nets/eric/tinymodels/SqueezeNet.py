@@ -15,20 +15,25 @@ class Fire(nn.Module):
         self.norm = torch.nn.BatchNorm2d(expand1x1_planes + expand3x3_planes)
         self.inplanes = inplanes
         self.squeeze = nn.Conv2d(inplanes, squeeze_planes, kernel_size=1)
-        self.squeeze_activation = nn.ReLU(inplace=True)
+        self.squeeze_activation = nn.LeakyReLU(negative_slope=0.2, inplace=True)
         self.expand1x1 = nn.Conv2d(squeeze_planes, expand1x1_planes,
                                    kernel_size=1)
-        self.expand1x1_activation = nn.ReLU(inplace=True)
+        self.expand1x1_activation = nn.LeakyReLU(negative_slope=0.2, inplace=True)
         self.expand3x3 = nn.Conv2d(squeeze_planes, expand3x3_planes,
                                    kernel_size=3, padding=1)
-        self.expand3x3_activation = nn.ReLU(inplace=True)
+        self.expand3x3_activation = nn.LeakyReLU(negative_slope=0.2, inplace=True)
+        self.should_iterate = inplanes == (expand3x3_planes + expand1x1_planes)
 
-    def forward(self, x):
-        x = self.squeeze_activation(self.squeeze(x))
-        return self.norm(torch.cat([
-            self.expand1x1_activation(self.expand1x1(x)),
-            self.expand3x3_activation(self.expand3x3(x))
-        ], 1))
+    def forward(self, input_data):
+        """Forward-propagates data through Fire module"""
+        output_data = self.squeeze_activation(self.squeeze(input_data))
+        output_data = torch.cat([
+            self.expand1x1_activation(self.expand1x1(output_data)),
+            self.expand3x3_activation(self.expand3x3(output_data))
+        ], 1)
+        output_data = output_data + input_data if self.should_iterate else output_data
+        output_data = self.norm(output_data)
+        return output_data
 
 
 class SqueezeNet(nn.Module):
@@ -38,31 +43,33 @@ class SqueezeNet(nn.Module):
 
         self.n_steps = n_steps
         self.n_frames = n_frames
-        self.pre_metadata_features = nn.Sequential(
+        self.final_output = nn.Sequential(
             nn.Conv2d(3 * 2 * self.n_frames, 16, kernel_size=3, stride=2),
-            nn.ReLU(inplace=True),
+            nn.LeakyReLU(negative_slope=0.2, inplace=True),
+            nn.Conv2d(16, 16, kernel_size=3, stride=1, padding=1),
+            nn.LeakyReLU(negative_slope=0.2, inplace=True),
+            nn.Conv2d(16, 16, kernel_size=3, stride=1, padding=1),
+            nn.LeakyReLU(negative_slope=0.2, inplace=True),
+            nn.MaxPool2d(kernel_size=3, stride=2, ceil_mode=True),
             Fire(16, 4, 8, 8),
             nn.Dropout2d(p=0.25),
-        )
-        self.post_metadata_features = nn.Sequential(
+
             Fire(16, 12, 12, 12),
-            nn.MaxPool2d(kernel_size=3, stride=2, ceil_mode=True),
             Fire(24, 16, 16, 16),
-            Fire(32, 16, 16, 16),
             nn.MaxPool2d(kernel_size=3, stride=2, ceil_mode=True),
             nn.Dropout2d(p=0.25),
+            Fire(32, 16, 16, 16),
             Fire(32, 24, 24, 24),
             Fire(48, 24, 24, 24),
-            nn.MaxPool2d(kernel_size=3, stride=2, ceil_mode=True),
             Fire(48, 32, 32, 32),
+            nn.MaxPool2d(kernel_size=3, stride=2, ceil_mode=True),
             Fire(64, 32, 32, 32),
             nn.Dropout2d(p=0.25),
-        )
-        self.final_output = nn.Sequential(
+
             nn.Conv2d(64, 24, kernel_size=3, stride=2, padding=1),
-            nn.ReLU(),
+            nn.LeakyReLU(negative_slope=0.2, inplace=True),
             nn.Conv2d(24, 12, kernel_size=3, stride=2, padding=1),
-            nn.ReLU(),
+            nn.LeakyReLU(negative_slope=0.2, inplace=True),
             nn.Conv2d(12, self.n_steps, kernel_size=3, stride=2, padding=1),
             nn.Sigmoid()
         )
@@ -79,9 +86,6 @@ class SqueezeNet(nn.Module):
                 init.normal(mod.bias.data, 0, 0.01)
 
     def forward(self, x, metadata):
-        x = self.pre_metadata_features(x)
-        # x = torch.cat((x, metadata), 1)
-        x = self.post_metadata_features(x)
         x = self.final_output(x)
         x = x.view(x.size(0), -1, 2)
         return x

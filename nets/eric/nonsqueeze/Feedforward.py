@@ -15,30 +15,30 @@ class Feedforward(nn.Module):
         self.n_frames = n_frames
         self.pre_metadata_features = nn.Sequential(
             nn.Conv2d(3 * 2 * n_frames, 12, kernel_size=3, stride=2),
-            nn.ReLU(inplace=True),
+            nn.LeakyReLU(negative_slope=0.2, inplace=True),
             nn.Conv2d(12, 12, kernel_size=3, padding=1),
-            nn.ReLU(inplace=True),
+            nn.LeakyReLU(negative_slope=0.2, inplace=True),
             nn.Dropout2d(p=0.25),
         )
         self.post_metadata_features = nn.Sequential(
             nn.Conv2d(12, 16, kernel_size=3, padding=1),
-            nn.ReLU(inplace=True),
+            nn.LeakyReLU(negative_slope=0.2, inplace=True),
             nn.MaxPool2d(kernel_size=3, stride=2, ceil_mode=True),
             nn.Conv2d(16, 16, kernel_size=3, padding=1),
-            nn.ReLU(inplace=True),
+            nn.LeakyReLU(negative_slope=0.2, inplace=True),
             nn.Conv2d(16, 24, kernel_size=3, padding=1),
-            nn.ReLU(inplace=True),
+            nn.LeakyReLU(negative_slope=0.2, inplace=True),
             nn.MaxPool2d(kernel_size=3, stride=2, ceil_mode=True),
             nn.Dropout2d(p=0.25),
         )
         self.pre_final = nn.Sequential(
             nn.Conv2d(24, 24, kernel_size=3, padding=1),
-            nn.ReLU(inplace=True),
+            nn.LeakyReLU(negative_slope=0.2, inplace=True),
             nn.Conv2d(24, 32, kernel_size=3, padding=1),
-            nn.ReLU(inplace=True),
+            nn.LeakyReLU(negative_slope=0.2, inplace=True),
             nn.MaxPool2d(kernel_size=3, stride=2, ceil_mode=True),
             nn.Conv2d(32, 32, kernel_size=3, padding=1),
-            nn.ReLU(inplace=True),
+            nn.LeakyReLU(negative_slope=0.2, inplace=True),
             nn.Dropout2d(p=0.25)
         )
         self.norm0 = nn.BatchNorm2d(12)
