@@ -112,7 +112,6 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
         # net_output = torch.cat((net_output, metadata), 1)
         net_output = self.post_metadata_features(net_output)
         net_output = self.pre_lstm_output(net_output)
-        print(net_output.size())
         net_output = net_output.contiguous().view(batch_size, -1, 16)
         for lstm in self.lstm_encoder:
             net_output, last_hidden_cell = lstm(net_output)
