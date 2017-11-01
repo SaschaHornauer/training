@@ -52,19 +52,17 @@ class SqueezeNet(nn.Module):
             nn.LeakyReLU(negative_slope=0.2, inplace=True),
             nn.MaxPool2d(kernel_size=3, stride=2, ceil_mode=True),
             Fire(16, 4, 8, 8),
-            nn.Dropout2d(p=0.25),
 
             Fire(16, 12, 12, 12),
             Fire(24, 16, 16, 16),
             nn.MaxPool2d(kernel_size=3, stride=2, ceil_mode=True),
-            nn.Dropout2d(p=0.25),
+            nn.Dropout2d(p=0.5),
             Fire(32, 16, 16, 16),
             Fire(32, 24, 24, 24),
             Fire(48, 24, 24, 24),
             Fire(48, 32, 32, 32),
             nn.MaxPool2d(kernel_size=3, stride=2, ceil_mode=True),
             Fire(64, 32, 32, 32),
-            nn.Dropout2d(p=0.25),
 
             nn.Conv2d(64, 24, kernel_size=3, stride=2, padding=1),
             nn.LeakyReLU(negative_slope=0.2, inplace=True),
@@ -94,10 +92,10 @@ class SqueezeNet(nn.Module):
         return sum([reduce(lambda x, y: x * y, [dim for dim in p.size()], 1) for p in self.parameters()])
 
 def unit_test():
-    test_net = SqueezeNet(1, 6)
-    a = test_net(Variable(torch.randn(1, 6*6, 94, 168)),
-                 Variable(torch.randn(1, 8, 23, 41)))
-    sizes = [1, 1, 2]
+    test_net = SqueezeNet(5, 6)
+    a = test_net(Variable(torch.randn(2, 6*6, 94, 168)),
+                 Variable(torch.randn(2, 8, 23, 41)))
+    sizes = [2, 5, 2]
     assert(all(a.size(i) == sizes[i] for i in range(len(sizes))))
     logging.debug('Net Test Output = {}'.format(a))
     logging.debug('Network was Unit Tested')
