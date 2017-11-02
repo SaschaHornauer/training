@@ -13,7 +13,7 @@
     "p_exclude_run": 0.0,
     "bias_sampling": false,
     "dataset": {
-      "path": "/hostroot/home/ehou/trainingAll/training/data/train/",
+      "path": "/hostroot/home/ehou/trainingSmallEpochs/training/data/train/",
       "p_subsample": 0.0001,
       "batch_size": 32,
       "shuffle": true,
@@ -25,7 +25,7 @@
     "rand_seed": 123123123,
     "shuffle": true,
     "dataset": {
-      "path": "/hostroot/home/ehou/trainingAll/training/data/val/",
+      "path": "/hostroot/home/ehou/trainingSmallEpochs/training/data/val/",
       "batch_size": 32,
       "shuffle": true,
       "train_ratio": 0.99
