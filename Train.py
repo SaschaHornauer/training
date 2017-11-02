@@ -48,7 +48,7 @@ def iterate(net, loss_func, optimizer=None, input=None, truth=None, train=True):
     # loss = (mse_loss(outputs, truth) + linear_loss(outputs, truth)) / 2
 
     if not train:
-        if iter_num['i'] % 20 == 0:
+        if iter_num['i'] % 5 == 0:
             print('------------------')
             print([int(i * 1000) / 1000. for i in
                    np.ndarray.tolist(outputs.cpu()[0].data.transpose(0,1).contiguous().view(-1).numpy())])

@@ -26,7 +26,7 @@
     "shuffle": true,
     "dataset": {
       "path": "/hostroot/home/ehou/trainingAll/training/data/val/",
-      "batch_size": 75,
+      "batch_size": 32,
       "shuffle": true,
       "train_ratio": 0.99
     }

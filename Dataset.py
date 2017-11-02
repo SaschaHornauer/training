@@ -227,7 +227,7 @@ class Dataset(data.Dataset):
         #         print 'ending binning'
         #         json.dump([self.train_class_probs, self.controls, self.num_cache_points, self.min_cache_points], open(self.cache_file, 'w'))
         # _ = 0
-        # random.seed(seed)
+        random.seed(seed)
         for i in train_part:
             # steer, motor = self.controls[str(i)][0], self.controls[str(i)][1]
             # if random.random() > p_subsample * (self.num_cache_points / (8 * self.min_cache_points) * self.train_class_probs[steer][motor]):
