@@ -48,9 +48,6 @@ class Bias():
         effective_p = requested_size / effective_size #This effective p is not yet scaled to effective size
         steer, motor = self.controls[str(index)][0], self.controls[str(index)][1]
         effective_p = effective_p * self.class_probs[steer][motor]
-        print(self.class_probs[steer][motor])
-        print(effective_p)
-        print('--------')
         return effective_p
 
 
@@ -246,7 +243,7 @@ class Dataset(data.Dataset):
         _ = 0
         random.seed(seed)
         for i in train_part:
-            if random.random() < bias.get_moment_prob(i, p_subsample):
+            if random.random() > bias.get_moment_prob(i, p_subsample):
                 remove_train.add(i)
             if _ % 100000 == 0:
                 print ('Trimming ' + str(_))
@@ -268,7 +265,7 @@ class Dataset(data.Dataset):
         _ = 0
         random.seed(seed)
         for i in val_part:
-            if random.random() < bias.get_moment_prob(i, p_subsample):
+            if random.random() > bias.get_moment_prob(i, p_subsample):
                 remove_val.add(i)
             if _ % 100000 == 0:
                 print ('Trimming ' + str(_))
