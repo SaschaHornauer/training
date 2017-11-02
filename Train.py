@@ -187,7 +187,7 @@ def main():
                 val_loss.add(loss)
 
                 print('Val Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'
-                      .format(epoch, batch_idx * len(camera), len(val_data_loader.dataset.val_part),
+                      .format(epoch, batch_idx * len(camera), len(val_data_loader.dataset.subsampled_val_part),
                               100. * batch_idx / len(val_data_loader), loss))
 
             Utils.csvwrite(config['logging']['validation_loss'], [val_loss.average()])

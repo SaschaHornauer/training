@@ -157,13 +157,9 @@ class Dataset(data.Dataset):
 
         self.seed = seed or self.total_length
         self.subsampled_train_part = None
+        self.subsampled_val_part = None
 
         self.cache_file = cache_file
-        self.num_cache_points = None
-        self.min_cache_points = None
-        self.num_sig_bins = None
-        self.train_class_probs = None
-        self.controls = {}
 
     def __getitem__(self, index):
         run_idx, t = self.create_map(index)
