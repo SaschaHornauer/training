@@ -13,12 +13,12 @@ import random
 
 
 class Bias():
-    def __init__(self, **kwargs):
+    def __init__(self, *args, **kwargs):
         self.class_probs, self.controls, self.num_cache_points, self.num_sig_bins, self.min_cache_points = \
             None, None, None, None, None
         self.init(**kwargs)
 
-    def init(self, **kwargs):
+    def init(self, *args, **kwargs):
         if 'class_probs' in kwargs:
             self.class_probs = kwargs['class_probs']
         if 'controls' in kwargs:
@@ -286,7 +286,6 @@ class Dataset(data.Dataset):
                 return len(self.visible) - idx - 1, global_index - length + 7
 
     def get_biased_sample(self, partition_set, cache_path=None):
-        assert type(cache_path) == str
 
         controls = {}
         control_bins = [[0 for __ in range(0, 16)] for _ in range(0, 16)]
