@@ -57,10 +57,10 @@ def iterate(net, loss_func, optimizer=None, input=None, truth=None, train=True):
                              [int(i * 1000) / 1000. for i in
                               np.ndarray.tolist(controls.numpy())]
         true_steering, true_controls = truths[0][0].cpu().data.view(-1), truths[0][1].cpu().data.view(-1)
-        print('Predicted steering: ' + steering.index(max(steering)))
-        print('Predicted motor: ' + controls.index(max(controls)))
-        print('Actual steering: ' + true_steering)
-        print('Actual motor: ' + true_controls)
+        print('Predicted steering: ' + str(steering.index(max(steering))))
+        print('Predicted motor: ' + str(controls.index(max(controls))))
+        print('Actual steering: ' + str(true_steering))
+        print('Actual motor: ' + str(true_controls))
     iter_num['i'] = 1 + iter_num['i']
 
     if not train:
