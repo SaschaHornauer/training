@@ -28,7 +28,7 @@
       "path": "/hostroot/home/ehou/trainingSmallEpochs/training/data/val/",
       "batch_size": 32,
       "shuffle": true,
-      "train_ratio": 0.99
+      "train_ratio": 0.9
     }
   },
 

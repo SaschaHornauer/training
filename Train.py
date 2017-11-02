@@ -159,14 +159,20 @@ def main():
                                   frame_stride=config['model']['frame_stride'],
                                   seed=config['validation']['rand_seed'],
                                   nframes=config['model']['past_frames'],
-                                  train_ratio=config['validation']['dataset']['train_ratio'],
+                                  # train_ratio=config['validation']['dataset']['train_ratio'],
+                                  train_ratio=0,
                                   nsteps=config['model']['future_frames'],
                                   separate_frames=config['model']['separate_frames'],
-                                  metadata_shape=config['model']['metadata_shape'])
+                                  metadata_shape=config['model']['metadata_shape'],
+                                  cache_file=('partition_cache' in config['training'] and config['training']['partition_cache'])
+                                             or config['model']['save_path'] + config['model']['name'] + '.cache'
+                                  )
 
             val_data_loader = val_dataset.get_val_loader(batch_size=config['validation']['dataset']['batch_size'],
                                                                shuffle=config['validation']['dataset']['shuffle'],
-                                                               pin_memory=False)
+                                                               pin_memory=False,
+                                                               seed=config['validation']['rand_seed'],
+                                                               p_subsample=config['validation']['dataset']['train_ratio'])
             val_loss = Utils.LossLog()
 
             net.eval()

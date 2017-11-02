@@ -12,6 +12,44 @@ from random import shuffle
 import random
 
 
+class Bias():
+    def __init__(self, **kwargs):
+        self.class_probs, self.controls, self.num_cache_points, self.num_sig_bins, self.min_cache_points = \
+            None, None, None, None, None
+        self.init(**kwargs)
+
+    def init(self, **kwargs):
+        if 'class_probs' in kwargs:
+            self.class_probs = kwargs['class_probs']
+        if 'controls' in kwargs:
+            self.controls = kwargs['controls']
+        if 'num_cache_points' in kwargs:
+            self.num_cache_points = kwargs['num_cache_points']
+        if 'num_sig_bins' in kwargs:
+            self.num_sig_bins = kwargs['num_sig_bins']
+        if 'min_cache_points' in kwargs:
+            self.min_cache_points = kwargs['min_cache_points']
+
+    def load(self, path):
+        js = json.load(open(path, 'r'))
+        self.init(**js)
+        return self
+
+    def save(self, path):
+        json.dump({'class_probs': self.class_probs,
+         'controls': self.controls,
+         'num_cache_points': self.num_cache_points,
+         'min_cache_points': self.min_cache_points,
+         'num_sig_bins': self.num_sig_bins}, open(path, 'w+'))
+
+    def get_moment_prob(self, index, p_subsample):
+        requested_size = p_subsample * self.num_cache_points
+        effective_size = self.num_sig_bins * self.min_cache_points
+        effective_p = requested_size / effective_size #This effective p is not yet scaled to effective size
+        steer, motor = self.controls[str(index)][0], self.controls[str(index)][1]
+        effective_p = effective_p * self.class_probs[steer][motor]
+        return effective_p
+
 
 class Dataset(data.Dataset):
 
@@ -200,41 +238,12 @@ class Dataset(data.Dataset):
 
     def get_train_loader(self, p_subsample=None, seed=None, *args, **kwargs):
         remove_train, train_part = set(), set(self.train_part or self.get_train_partition())
-        control_bins = [[0 for __ in range(0, 16)] for _ in range(0, 16)]
 
-        if self.train_class_probs and self.controls:
-            pass
-        elif self.cache_file:
-            try:
-                js = json.load(open(self.cache_file, 'r'))
-                self.train_class_probs, self.controls, self.num_cache_points, self.min_cache_points, self.num_sig_bins = \
-                    js[0], js[1], js[2], js[3], js[4]
-            except Exception as e:
-                print(e)
-                print(self.cache_file)
-                print 'starting binning'
-                _ = 0
-                for i in train_part:
-                    run_idx, t = self.create_map(i)
-                    steer = int(float(self.run_files[run_idx]['metadata']['steer'][t]) / (100./16.))
-                    motor = int(float(self.run_files[run_idx]['metadata']['motor'][t]) / (100./16.))
-                    self.controls[str(i)] = (steer, motor)
-                    control_bins[steer][motor] += 1
-                    if _ % 10000 == 0:
-                        print(str(_) + ' binned')
-                    _ += 1
-                self.num_cache_points = sum([sum(c) for c in control_bins])
-                self.min_cache_points = min([min([c2 for c2 in c if c2 > 1000]) for c in control_bins])
-                self.train_class_probs = [[self.min_cache_points / (c + 1e-32) for c in _] for _ in control_bins]
-                self.num_sig_bins = sum([sum([1 for c2 in c if c2 > 1000]) for c in control_bins])
-                print 'ending binning'
-                json.dump([self.train_class_probs, self.controls, self.num_cache_points, self.min_cache_points, self.num_sig_bins],
-                          open(self.cache_file, 'w'))
+        bias = self.get_biased_sample(train_part, self.cache_file)
         _ = 0
         random.seed(seed)
         for i in train_part:
-            steer, motor = self.controls[str(i)][0], self.controls[str(i)][1]
-            if random.random() > p_subsample * (self.num_cache_points / (self.num_sig_bins * self.min_cache_points) * self.train_class_probs[steer][motor]):
+            if random.random() < bias.get_moment_prob(i, p_subsample):
                 remove_train.add(i)
             if _ % 100000 == 0:
                 print ('Trimming ' + str(_))
@@ -249,14 +258,69 @@ class Dataset(data.Dataset):
         kwargs['sampler'] = torch.utils.data.sampler.SubsetRandomSampler(list(train_part))
         return torch.utils.data.DataLoader(self, *args, **kwargs)
 
-    def get_val_loader(self, *args, **kwargs):
-        kwargs['sampler'] = torch.utils.data.sampler.SubsetRandomSampler(list(self.get_val_partition()))
+    def get_val_loader(self, p_subsample=1, seed=None, *args, **kwargs):
+        remove_val, val_part = set(), set(self.val_part or self.get_val_partition())
+
+        bias = self.get_biased_sample(val_part, self.cache_file + '.val')
+        _ = 0
+        random.seed(seed)
+        for i in val_part:
+            if random.random() < bias.get_moment_prob(i, p_subsample):
+                remove_val.add(i)
+            if _ % 100000 == 0:
+                print ('Trimming ' + str(_))
+            _ += 1
+            # if random.random() > p_subsample:
+            #     remove_val.add(i)
+        for i in remove_val:
+            val_part.remove(i)
+
+        self.subsampled_val_part = val_part
+
+        kwargs['sampler'] = torch.utils.data.sampler.SubsetRandomSampler(list(val_part))
         return torch.utils.data.DataLoader(self, *args, **kwargs)
 
     def create_map(self, global_index):
         for idx, length in enumerate(self.visible[::-1]):
             if global_index >= length:
                 return len(self.visible) - idx - 1, global_index - length + 7
+
+    def get_biased_sample(self, partition_set, cache_path=None):
+        assert type(cache_path) == str
+
+        controls = {}
+        control_bins = [[0 for __ in range(0, 16)] for _ in range(0, 16)]
+        try:
+            return Bias().load(cache_path)
+        except Exception as e:
+            print(e)
+            print(cache_path)
+            print 'starting binning'
+            _ = 0
+            for i in partition_set:
+                run_idx, t = self.create_map(i)
+                steer = int(float(self.run_files[run_idx]['metadata']['steer'][t]) / (100. / 16.))
+                motor = int(float(self.run_files[run_idx]['metadata']['motor'][t]) / (100. / 16.))
+                controls[str(i)] = (steer, motor)
+                control_bins[steer][motor] += 1
+                if _ % 10000 == 0:
+                    print(str(_) + ' binned')
+                _ += 1
+
+                num_cache_points = sum([sum(c) for c in control_bins])
+                min_cache_points = min([min([c2 for c2 in c if c2 > 100]) for c in control_bins])
+                class_probs = [[min_cache_points / (c + 1e-32) for c in _] for _ in control_bins]
+                num_sig_bins = sum([sum([1 for c2 in c if c2 > 100]) for c in control_bins])
+
+                bias = {'class_probs': class_probs,
+                            'controls': controls,
+                            'num_cache_points': num_cache_points,
+                            'min_cache_points': min_cache_points,
+                            'num_sig_bins': num_sig_bins}
+
+                bias = Bias(**bias)
+                bias.save(cache_path)
+                return bias
 
 if __name__ == '__main__':
     train_dataset = Dataset('/hostroot/data/dataset/bair_car_data_Main_Dataset', ['furtive'], [])
