@@ -46,17 +46,24 @@ def iterate(net, loss_func, optimizer=None, input=None, truth=None, train=True):
     outputs = [_.cuda() for _ in net(*input)]
     truth = Variable(truth).cuda()
     truths = torch.unbind(torch.squeeze(truth, 1), 1)
-    loss = nll1(outputs[0], truths[0]) + nll2(outputs[1], truths[1])
+    loss = nll1(outputs[0], truths[0].long()) + nll2(outputs[1], truths[1].long())
     # loss = (mse_loss(outputs, truth) + linear_loss(outputs, truth)) / 2
 
+    if iter_num['i'] % 5 == 0:
+        print('------------------')
+        steering, controls = outputs[0][0].cpu().data.view(-1), outputs[0][1].cpu().data.view(-1)
+        steering, controls = [int(i * 1000) / 1000. for i in
+                              np.ndarray.tolist(steering.numpy())], \
+                             [int(i * 1000) / 1000. for i in
+                              np.ndarray.tolist(controls.numpy())]
+        true_steering, true_controls = truths[0][0].cpu().data.view(-1), truths[0][1].cpu().data.view(-1)
+        print('Predicted steering: ' + steering.index(max(steering)))
+        print('Predicted motor: ' + controls.index(max(controls)))
+        print('Actual steering: ' + true_steering)
+        print('Actual motor: ' + true_controls)
+    iter_num['i'] = 1 + iter_num['i']
+
     if not train:
-        if iter_num['i'] % 5 == 0:
-            print('------------------')
-            print([int(i * 1000) / 1000. for i in
-                   np.ndarray.tolist(outputs.cpu()[0].data.transpose(0,1).contiguous().view(-1).numpy())])
-            print([int(i * 1000) / 1000. for i in
-                   np.ndarray.tolist(truth.cpu()[0].data.transpose(0,1).contiguous().view(-1).numpy())])
-        iter_num['i'] = 1 + iter_num['i']
         return loss.cpu().data[0]
 
     # Run backprop, gradient clipping
@@ -65,14 +72,6 @@ def iterate(net, loss_func, optimizer=None, input=None, truth=None, train=True):
 
     # Apply backprop gradients
     optimizer.step()
-
-    if iter_num['i'] % 5 == 0:
-        print('------------------')
-        print([int(i * 1000) / 1000. for i in
-               np.ndarray.tolist(outputs.cpu()[0].data.transpose(0,1).contiguous().view(-1).numpy())])
-        print([int(i * 1000) / 1000. for i in
-               np.ndarray.tolist(truth.cpu()[0].data.transpose(0,1).contiguous().view(-1).numpy())])
-    iter_num['i'] = 1 + iter_num['i']
 
     return loss.cpu().data[0]
 
