@@ -44,36 +44,39 @@ class SqueezeNet(nn.Module):
         self.n_steps = n_steps
         self.n_frames = n_frames
         self.final_output = nn.Sequential(
-            nn.Conv2d(3 * 2 * self.n_frames, 16, kernel_size=3, stride=2),
+            nn.Conv2d(6 * self.n_frames, 12, kernel_size=3, stride=1, padding=1),
             nn.LeakyReLU(negative_slope=0.2, inplace=True),
-            nn.Conv2d(16, 16, kernel_size=3, stride=1, padding=1),
+            nn.BatchNorm2d(12),
+            nn.Conv2d(12, 16, kernel_size=3, stride=1, padding=1),
             nn.LeakyReLU(negative_slope=0.2, inplace=True),
-            nn.Conv2d(16, 16, kernel_size=3, stride=1, padding=1),
+            nn.BatchNorm2d(16),
+            nn.Conv2d(16, 16, kernel_size=3, stride=2),
             nn.LeakyReLU(negative_slope=0.2, inplace=True),
             nn.AvgPool2d(kernel_size=3, stride=2, ceil_mode=True),
-            Fire(16, 4, 8, 8),
-            nn.Dropout2d(p=0.25),
+            nn.BatchNorm2d(16),
 
+            Fire(16, 4, 8, 8),
             Fire(16, 12, 12, 12),
             Fire(24, 16, 16, 16),
             nn.AvgPool2d(kernel_size=3, stride=2, ceil_mode=True),
-            nn.Dropout2d(p=0.5),
             Fire(32, 16, 16, 16),
             Fire(32, 24, 24, 24),
+            nn.Dropout2d(p=0.25),
             Fire(48, 24, 24, 24),
             Fire(48, 32, 32, 32),
             nn.AvgPool2d(kernel_size=3, stride=2, ceil_mode=True),
             Fire(64, 32, 32, 32),
-            nn.Dropout2d(p=0.5),
 
-            nn.Conv2d(64, 24, kernel_size=3, stride=2, padding=1),
+            nn.Conv2d(64, 32, kernel_size=3, stride=2, padding=1),
             nn.LeakyReLU(negative_slope=0.2, inplace=True),
-            nn.Dropout2d(p=0.5),
-            nn.Conv2d(24, 12, kernel_size=3, stride=2, padding=1),
+            nn.BatchNorm2d(32),
+            nn.Dropout2d(p=0.25),
+            nn.Conv2d(32, 16, kernel_size=3, stride=2, padding=1),
             nn.LeakyReLU(negative_slope=0.2, inplace=True),
-            nn.Dropout2d(p=0.5),
-            nn.Conv2d(12, self.n_steps, kernel_size=3, stride=2, padding=1),
-            nn.Sigmoid()
+            nn.BatchNorm2d(16),
+            nn.Dropout2d(p=0.25),
+            nn.Conv2d(16, self.n_steps, kernel_size=3, stride=2, padding=1),
+            nn.Sigmoid(),
         )
 
         for mod in self.modules():
