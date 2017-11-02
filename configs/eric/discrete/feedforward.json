@@ -1,0 +1,15 @@
+{
+  "parent_config": "eric/discrete/default.json",
+  "logging": {
+    "path": "feedforward_training.log",
+    "training_loss": "./logs/discrete/feedforward_trainloss.log",
+    "validation_loss": "./logs/discrete/feedforward_valloss.log"
+  },
+
+  "model": {
+    "name": "feedforward",
+    "py_path": "nets.eric.discrete.Feedforward",
+    "separate_frames": false,
+    "metadata_shape": [8, 23, 41]
+  }
+}

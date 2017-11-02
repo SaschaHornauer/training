@@ -94,7 +94,6 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
     def forward(self, camera_data, metadata):
         """Forward-propagates data through SqueezeNetTimeLSTM"""
         batch_size = camera_data.size(0)
-        nframes = camera_data.size(1) // 6
         metadata = metadata.contiguous().view(-1, 8, 23, 41)
         net_output = camera_data.contiguous().view(-1, 6, 94, 168)
         net_output = self.pre_metadata_features(net_output)

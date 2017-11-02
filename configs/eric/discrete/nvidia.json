@@ -1,0 +1,15 @@
+{
+  "parent_config": "eric/discrete/default.json",
+  "logging": {
+    "path": "nvidia_training.log",
+    "training_loss": "./logs/discrete/nvidia_trainloss.log",
+    "validation_loss": "./logs/discrete/nvidia_valloss.log"
+  },
+
+  "model": {
+    "name": "nvidia",
+    "py_path": "nets.eric.discrete.Nvidia",
+    "separate_frames": true,
+    "metadata_shape": [6, 8, 23, 41]
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "parent_config": null,
+  "logging": {
+    "verbose": false
+  },
+
+  "training": {
+    "partition_cache": "./save/training.cache",
+    "start_epoch": 0,
+    "num_epochs": 500,
+    "learning_rate": 1e-4,
+    "rand_seed": 123123123,
+    "p_exclude_run": 0.0,
+    "bias_sampling": false,
+    "dataset": {
+      "path": "/hostroot/home/ehou/trainingSmallEpochs/training/data/train/",
+      "p_subsample": 0.001,
+      "batch_size": 32,
+      "shuffle": true,
+      "train_ratio": 1.0
+    }
+  },
+
+  "validation": {
+    "rand_seed": 123123123,
+    "shuffle": true,
+    "dataset": {
+      "path": "/hostroot/home/ehou/trainingSmallEpochs/training/data/val/",
+      "batch_size": 32,
+      "shuffle": true,
+      "train_ratio": 0.99
+    }
+  },
+
+  "hardware": {
+    "use_gpu": true,
+    "gpu": 1
+  },
+
+  "model": {
+    "past_frames": 6,
+    "future_frames": 1,
+    "frame_stride": 2,
+    "step_stride": 6,
+    "save_path": "./save/discrete/",
+    "resume_path": "./save/discrete/"
+  },
+
+  "dataset": {
+    "path": "/hostroot/data/dataset/bair_car_data_Main_Dataset/",
+    "train_path": null,
+    "ignore_labels": ["reject_run", "left", "out1_in2", "play", "Smyth", "racing", "furtive",
+      "follow", "clockwise", "counterclockwise"],
+    "train_ratio": 0.8,
+    "val_ratio": 0.2,
+    "include_labels": ["campus", "local", "Tilden"],
+    "use_aruco": false
+  }
+}
