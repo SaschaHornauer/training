@@ -31,10 +31,10 @@ class Nvidia(nn.Module):
             nn.Linear(768, 250),
             nn.ReLU(),
             nn.Dropout(p=0.5),
-            nn.Linear(250, 200),
+            nn.Linear(250, 100),
             nn.ReLU(),
             nn.Dropout(p=0.5),
-            nn.Linear(200, 200),
+            nn.Linear(100, 20),
         )
         self.lsm = nn.LogSoftmax()
         self.lsm2 = nn.LogSoftmax()
@@ -55,7 +55,7 @@ class Nvidia(nn.Module):
         x = self.conv_nets(x)
         x = x.view(x.size(0), -1)
         x = self.fcl(x)
-        x = torch.unbind(x.contiguous().view(x.size(0), 2, 100), 1)
+        x = torch.unbind(x.contiguous().view(x.size(0), 2, 10), 1)
         steering, controls = self.lsm(x[0]), self.lsm2(x[1])
         print(steering.size())
         return steering, controls

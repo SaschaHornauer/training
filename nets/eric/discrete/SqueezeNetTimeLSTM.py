@@ -97,15 +97,15 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
         # self.lstm_decoder = nn.ModuleList([
         #     nn.LSTM(2, 64, 1, batch_first=True)
         # ])
-        self.output_linear = nn.Sequential(nn.Linear(64, 128),
+        self.output_linear = nn.Sequential(nn.Linear(64, 32),
                                            nn.LeakyReLU(negative_slope=0.2, inplace=True),
-                                           nn.BatchNorm1d(128),
+                                           nn.BatchNorm1d(32),
                                            nn.Dropout(0.25),
-                                           nn.Linear(128, 200),
+                                           nn.Linear(32, 32),
                                            nn.LeakyReLU(negative_slope=0.2, inplace=True),
-                                           nn.BatchNorm1d(200),
+                                           nn.BatchNorm1d(32),
                                            nn.Dropout(0.25),
-                                           nn.Linear(200, 200)
+                                           nn.Linear(32, 20)
                                            )
 
         self.lsm = nn.LogSoftmax()
@@ -159,7 +159,7 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
         #     net_output = torch.cat(list_outputs, 1)
         net_output = self.output_linear(last_hidden_cell[0].contiguous().view(-1, 64))
         net_output = net_output.contiguous().view(batch_size, -1, 2)
-        net_output = torch.unbind(net_output.contiguous().view(-1, 2, 100), 1)
+        net_output = torch.unbind(net_output.contiguous().view(-1, 2, 10), 1)
         steering, controls = self.lsm(net_output[0]), self.lsm2(net_output[1])
         # self.is_generating = not self.is_generating
         return steering, controls
@@ -189,7 +189,7 @@ def unit_test():
         # ,
         # torch.randn(1, 1, 2)
     )
-    print test_net_output[0].size(), test_net_output[1].size()
+    print(test_net_output[0].size())
     logging.debug('Net Test Output = {}'.format(test_net_output))
     logging.debug('Network was Unit Tested')
     print(test_net.num_params())

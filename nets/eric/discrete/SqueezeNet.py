@@ -67,15 +67,15 @@ class SqueezeNet(nn.Module):
             nn.AvgPool2d(kernel_size=3, stride=2, ceil_mode=True),
             Fire(64, 32, 32, 32),
 
-            nn.Conv2d(64, 82, kernel_size=3, stride=2, padding=1),
+            nn.Conv2d(64, 32, kernel_size=3, stride=2, padding=1),
             nn.LeakyReLU(negative_slope=0.2, inplace=True),
-            nn.BatchNorm2d(82),
+            nn.BatchNorm2d(32),
             nn.Dropout2d(p=0.25),
-            nn.Conv2d(82, 100, kernel_size=3, stride=2, padding=1),
+            nn.Conv2d(32, 16, kernel_size=3, stride=2, padding=1),
             nn.LeakyReLU(negative_slope=0.2, inplace=True),
-            nn.BatchNorm2d(100),
+            nn.BatchNorm2d(16),
             nn.Dropout2d(p=0.25),
-            nn.Conv2d(100, 100, kernel_size=3, stride=2, padding=1),
+            nn.Conv2d(16, 10, kernel_size=3, stride=2, padding=1),
         )
         self.lsm = nn.LogSoftmax()
         self.lsm2 = nn.LogSoftmax()
@@ -103,6 +103,7 @@ def unit_test():
     test_net = SqueezeNet(5, 6)
     a = test_net(Variable(torch.randn(2, 6*6, 94, 168)),
                  Variable(torch.randn(2, 8, 23, 41)))
+    print(a[0].size())
     logging.debug('Net Test Output = {}'.format(a))
     logging.debug('Network was Unit Tested')
     print(test_net.num_params())

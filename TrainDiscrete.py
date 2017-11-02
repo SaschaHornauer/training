@@ -44,7 +44,7 @@ def iterate(net, loss_func, optimizer=None, input=None, truth=None, train=True):
 
     # Transform inputs into Variables for pytorch and run forward prop
     outputs = [_.cuda() for _ in net(*input)]
-    truth = Variable(truth).cuda() * 99
+    truth = Variable(truth).cuda() * 9
     truths = torch.unbind(torch.squeeze(truth, 1), 1)
     loss = nll1(outputs[0], truths[0].long()) + nll2(outputs[1], truths[1].long())
     # loss = (mse_loss(outputs, truth) + linear_loss(outputs, truth)) / 2
@@ -56,7 +56,7 @@ def iterate(net, loss_func, optimizer=None, input=None, truth=None, train=True):
                               np.ndarray.tolist(steering.numpy())], \
                              [int(i * 1000) / 1000. for i in
                               np.ndarray.tolist(controls.numpy())]
-        true_steering, true_controls = truths[0][0].cpu().data.view(-1), truths[0][1].cpu().data.view(-1)
+        true_steering, true_controls = truths[0][0].cpu().data.view(-1), truths[1][0].cpu().data.view(-1)
         print('Predicted steering: ' + str(steering.index(max(steering))))
         print('Predicted motor: ' + str(controls.index(max(controls))))
         print('Actual steering: ' + str(true_steering))
