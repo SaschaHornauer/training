@@ -48,6 +48,7 @@ class Bias():
         effective_p = requested_size / effective_size #This effective p is not yet scaled to effective size
         steer, motor = self.controls[str(index)][0], self.controls[str(index)][1]
         effective_p = effective_p * self.class_probs[steer][motor]
+        print(self.class_probs[steer][motor])
         return effective_p
 
 
