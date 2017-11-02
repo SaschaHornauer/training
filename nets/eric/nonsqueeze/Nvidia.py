@@ -41,13 +41,13 @@ class Nvidia(nn.Module):
         for mod in self.modules():
             if hasattr(mod, 'weight') and hasattr(mod.weight, 'data'):
                 if isinstance(mod, nn.Conv2d):
-                    init.kaiming_normal(mod.weight.data)
+                    init.kaiming_uniform(mod.weight.data)
                 elif len(mod.weight.data.size()) >= 2:
-                    init.xavier_normal(mod.weight.data)
+                    init.xavier_uniform(mod.weight.data)
                 else:
                     init.normal(mod.weight.data)
             if hasattr(mod, 'bias') and hasattr(mod.bias, 'data'):
-                init.normal(mod.bias.data, 0, 0.01)
+                init.normal(mod.bias.data)
 
 
     def forward(self, x, metadata):

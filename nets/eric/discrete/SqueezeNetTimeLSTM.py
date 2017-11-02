@@ -69,13 +69,14 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
             nn.AvgPool2d(kernel_size=3, stride=2, ceil_mode=True),
             nn.BatchNorm2d(16),
 
+            nn.Dropout2d(p=0.5),
             Fire(16, 4, 8, 8),
             Fire(16, 12, 12, 12),
             Fire(24, 16, 16, 16),
             nn.AvgPool2d(kernel_size=3, stride=2, ceil_mode=True),
             Fire(32, 16, 16, 16),
             Fire(32, 24, 24, 24),
-            nn.Dropout2d(p=0.25),
+            nn.Dropout2d(p=0.5),
             Fire(48, 24, 24, 24),
             Fire(48, 32, 32, 32),
             nn.AvgPool2d(kernel_size=3, stride=2, ceil_mode=True),
@@ -83,11 +84,11 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
             nn.Conv2d(64, 32, kernel_size=3, stride=2, padding=1),
             nn.LeakyReLU(negative_slope=0.2, inplace=True),
             nn.BatchNorm2d(32),
-            nn.Dropout2d(p=0.25),
+            nn.Dropout2d(p=0.5),
             nn.Conv2d(32, 16, kernel_size=3, stride=2, padding=1),
             nn.LeakyReLU(negative_slope=0.2, inplace=True),
             nn.BatchNorm2d(16),
-            nn.Dropout2d(p=0.25),
+            nn.Dropout2d(p=0.5),
             nn.Conv2d(16, 16, kernel_size=3, stride=2, padding=1),
             nn.BatchNorm2d(16),
         )
@@ -100,11 +101,11 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
         self.output_linear = nn.Sequential(nn.Linear(64, 32),
                                            nn.LeakyReLU(negative_slope=0.2, inplace=True),
                                            nn.BatchNorm1d(32),
-                                           nn.Dropout(0.25),
+                                           nn.Dropout(0.5),
                                            nn.Linear(32, 32),
                                            nn.LeakyReLU(negative_slope=0.2, inplace=True),
                                            nn.BatchNorm1d(32),
-                                           nn.Dropout(0.25),
+                                           nn.Dropout(0.5),
                                            nn.Linear(32, 20)
                                            )
 
@@ -114,13 +115,13 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
         for mod in self.modules():
             if hasattr(mod, 'weight') and hasattr(mod.weight, 'data'):
                 if isinstance(mod, nn.Conv2d):
-                    init.kaiming_normal(mod.weight.data)
+                    init.kaiming_uniform(mod.weight.data)
                 elif len(mod.weight.data.size()) >= 2:
-                    init.xavier_normal(mod.weight.data)
+                    init.xavier_uniform(mod.weight.data)
                 else:
                     init.normal(mod.weight.data)
             if hasattr(mod, 'bias') and hasattr(mod.bias, 'data'):
-                init.normal(mod.bias.data, 0, 0.01)
+                init.normal(mod.bias.data)
         # self.is_generating = False
 
 

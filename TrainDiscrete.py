@@ -49,19 +49,22 @@ def iterate(net, loss_func, optimizer=None, input=None, truth=None, train=True):
     loss = nll1(outputs[0], truths[0].long()) + nll2(outputs[1], truths[1].long())
     # loss = (mse_loss(outputs, truth) + linear_loss(outputs, truth)) / 2
 
-    if iter_num['i'] % 5 == 0:
-        print('------------------')
-        steering, controls = outputs[0][0].cpu().data.view(-1), outputs[0][1].cpu().data.view(-1)
-        steering, controls = [int(i * 1000) / 1000. for i in
-                              np.ndarray.tolist(steering.numpy())], \
-                             [int(i * 1000) / 1000. for i in
-                              np.ndarray.tolist(controls.numpy())]
-        true_steering, true_controls = truths[0][0].cpu().data.view(-1), truths[1][0].cpu().data.view(-1)
-        print('Predicted steering: ' + str(steering.index(max(steering))))
-        print('Predicted motor: ' + str(controls.index(max(controls))))
-        print('Actual steering: ' + str(true_steering))
-        print('Actual motor: ' + str(true_controls))
-    iter_num['i'] = 1 + iter_num['i']
+    try:
+        if iter_num['i'] % 5 == 0:
+            print('------------------')
+            steering, controls = outputs[0][0].cpu().data.view(-1), outputs[0][1].cpu().data.view(-1)
+            steering, controls = [int(i * 1000) / 1000. for i in
+                                  np.ndarray.tolist(steering.numpy())], \
+                                 [int(i * 1000) / 1000. for i in
+                                  np.ndarray.tolist(controls.numpy())]
+            true_steering, true_controls = truths[0][0].cpu().data.view(-1), truths[1][0].cpu().data.view(-1)
+            print('Predicted steering: ' + str(steering.index(max(steering))))
+            print('Predicted motor: ' + str(controls.index(max(controls))))
+            print('Actual steering: ' + str(true_steering))
+            print('Actual motor: ' + str(true_controls))
+        iter_num['i'] = 1 + iter_num['i']
+    except Exception as e:
+        print e
 
     if not train:
         return loss.cpu().data[0]

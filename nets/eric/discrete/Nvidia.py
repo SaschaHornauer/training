@@ -42,13 +42,13 @@ class Nvidia(nn.Module):
         for mod in self.modules():
             if hasattr(mod, 'weight') and hasattr(mod.weight, 'data'):
                 if isinstance(mod, nn.Conv2d):
-                    init.kaiming_normal(mod.weight.data)
+                    init.kaiming_uniform(mod.weight.data)
                 elif len(mod.weight.data.size()) >= 2:
-                    init.xavier_normal(mod.weight.data)
+                    init.xavier_uniform(mod.weight.data)
                 else:
                     init.normal(mod.weight.data)
             if hasattr(mod, 'bias') and hasattr(mod.bias, 'data'):
-                init.normal(mod.bias.data, 0, 0.01)
+                init.normal(mod.bias.data)
 
 
     def forward(self, x, metadata):
@@ -57,7 +57,6 @@ class Nvidia(nn.Module):
         x = self.fcl(x)
         x = torch.unbind(x.contiguous().view(x.size(0), 2, 10), 1)
         steering, controls = self.lsm(x[0]), self.lsm2(x[1])
-        print(steering.size())
         return steering, controls
 
     def num_params(self):
