@@ -172,7 +172,7 @@ def main():
                                                                shuffle=config['validation']['dataset']['shuffle'],
                                                                pin_memory=False,
                                                                seed=config['validation']['rand_seed'],
-                                                               p_subsample=config['validation']['dataset']['train_ratio'])
+                                                               p_subsample=1.-config['validation']['dataset']['train_ratio'])
             val_loss = Utils.LossLog()
 
             net.eval()
