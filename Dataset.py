@@ -49,6 +49,8 @@ class Bias():
         steer, motor = self.controls[str(index)][0], self.controls[str(index)][1]
         effective_p = effective_p * self.class_probs[steer][motor]
         print(self.class_probs[steer][motor])
+        print(effective_p)
+        print('--------')
         return effective_p
 
 
