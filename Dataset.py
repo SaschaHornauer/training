@@ -306,20 +306,20 @@ class Dataset(data.Dataset):
                     print(str(_) + ' binned')
                 _ += 1
 
-                num_cache_points = sum([sum(c) for c in control_bins])
-                min_cache_points = min([min([c2 for c2 in c if c2 > 100]) for c in control_bins])
-                class_probs = [[min_cache_points / (c + 1e-32) for c in _] for _ in control_bins]
-                num_sig_bins = sum([sum([1 for c2 in c if c2 > 100]) for c in control_bins])
+            num_cache_points = sum([sum(c) for c in control_bins])
+            min_cache_points = min([min([c2 for c2 in c if c2 > 100]) for c in control_bins])
+            class_probs = [[min_cache_points / (c + 1e-32) for c in _] for _ in control_bins]
+            num_sig_bins = sum([sum([1 for c2 in c if c2 > 100]) for c in control_bins])
 
-                bias = {'class_probs': class_probs,
-                            'controls': controls,
-                            'num_cache_points': num_cache_points,
-                            'min_cache_points': min_cache_points,
-                            'num_sig_bins': num_sig_bins}
+            bias = {'class_probs': class_probs,
+                        'controls': controls,
+                        'num_cache_points': num_cache_points,
+                        'min_cache_points': min_cache_points,
+                        'num_sig_bins': num_sig_bins}
 
-                bias = Bias(**bias)
-                bias.save(cache_path)
-                return bias
+            bias = Bias(**bias)
+            bias.save(cache_path)
+            return bias
 
 if __name__ == '__main__':
     train_dataset = Dataset('/hostroot/data/dataset/bair_car_data_Main_Dataset', ['furtive'], [])
