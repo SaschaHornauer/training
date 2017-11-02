@@ -47,15 +47,18 @@ def iterate(net, loss_func, optimizer=None, input=None, truth=None, train=True):
     loss = loss_func(outputs, truth)
     # loss = (mse_loss(outputs, truth) + linear_loss(outputs, truth)) / 2
 
-    if not train:
-        if iter_num['i'] % 5 == 0:
-            print('------------------')
-            print([int(i * 1000) / 1000. for i in
-                   np.ndarray.tolist(outputs.cpu()[0].data.transpose(0,1).contiguous().view(-1).numpy())])
-            print([int(i * 1000) / 1000. for i in
-                   np.ndarray.tolist(truth.cpu()[0].data.transpose(0,1).contiguous().view(-1).numpy())])
-        iter_num['i'] = 1 + iter_num['i']
-        return loss.cpu().data[0]
+    try:
+        if not train:
+            if iter_num['i'] % 5 == 0:
+                print('------------------')
+                print([int(i * 1000) / 1000. for i in
+                       np.ndarray.tolist(outputs.cpu()[0].data.transpose(0,1).contiguous().view(-1).numpy())])
+                print([int(i * 1000) / 1000. for i in
+                       np.ndarray.tolist(truth.cpu()[0].data.transpose(0,1).contiguous().view(-1).numpy())])
+            iter_num['i'] = 1 + iter_num['i']
+            return loss.cpu().data[0]
+    except Exception as e:
+        print e
 
     # Run backprop, gradient clipping
     loss.backward()
