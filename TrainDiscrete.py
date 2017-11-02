@@ -43,7 +43,7 @@ def iterate(net, loss_func, optimizer=None, input=None, truth=None, train=True):
 
 
     # Transform inputs into Variables for pytorch and run forward prop
-    outputs = net(*input).cuda()
+    outputs = [_.cuda() for _ in net(*input)]
     truth = Variable(truth).cuda()
     truths = torch.unbind(torch.squeeze(truth, 1), 1)
     loss = nll1(outputs[0], truths[0]) + nll2(outputs[1], truths[1])
