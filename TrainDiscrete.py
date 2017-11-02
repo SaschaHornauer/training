@@ -71,7 +71,7 @@ def iterate(net, loss_func, optimizer=None, input=None, truth=None, train=True):
 
     # Run backprop, gradient clipping
     loss.backward()
-    nnutils.clip_grad_norm(net.parameters(), 1.0)
+    nnutils.clip_grad_norm(net.parameters(), 0.25)
 
     # Apply backprop gradients
     optimizer.step()
