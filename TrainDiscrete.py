@@ -44,7 +44,7 @@ def iterate(net, loss_func, optimizer=None, input=None, truth=None, train=True):
 
     # Transform inputs into Variables for pytorch and run forward prop
     outputs = [_.cuda() for _ in net(*input)]
-    truth = Variable(truth).cuda() * 100
+    truth = Variable(truth).cuda() * 99
     truths = torch.unbind(torch.squeeze(truth, 1), 1)
     loss = nll1(outputs[0], truths[0].long()) + nll2(outputs[1], truths[1].long())
     # loss = (mse_loss(outputs, truth) + linear_loss(outputs, truth)) / 2
