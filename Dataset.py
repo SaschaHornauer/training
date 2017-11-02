@@ -216,8 +216,8 @@ class Dataset(data.Dataset):
                 _ = 0
                 for i in train_part:
                     run_idx, t = self.create_map(i)
-                    steer = int(float(self.run_files[run_idx]['metadata']['steer'][t]) / (100/16))
-                    motor = int(float(self.run_files[run_idx]['metadata']['motor'][t]) / (100/16))
+                    steer = int(float(self.run_files[run_idx]['metadata']['steer'][t]) / (100./16.))
+                    motor = int(float(self.run_files[run_idx]['metadata']['motor'][t]) / (100./16.))
                     self.controls[str(i)] = (steer, motor)
                     control_bins[steer][motor] += 1
                     if _ % 10000 == 0:
