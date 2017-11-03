@@ -22,7 +22,7 @@ class Fire(nn.Module):  # pylint: disable=too-few-public-methods
         super(Fire, self).__init__()
         self.final_output = nn.Sequential(
             torch.nn.BatchNorm2d(expand1x1_planes + expand3x3_planes),
-            nn.Dropout2d(p=0.3)
+            nn.Dropout2d(p=0.75)
         )
         self.inplanes = inplanes
         self.squeeze = nn.Conv2d(inplanes, squeeze_planes, kernel_size=1)
@@ -97,7 +97,7 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
             nn.Conv2d(64, 32, kernel_size=3, stride=2, padding=1),
             nn.ELU(inplace=True),
             nn.BatchNorm2d(32),
-            nn.Dropout2d(p=0.5),
+            nn.Dropout2d(p=0.75),
             nn.Conv2d(32, 16, kernel_size=3, stride=2, padding=1),
             nn.ELU(inplace=True),
             nn.BatchNorm2d(16),
@@ -105,7 +105,7 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
             nn.Conv2d(16, 16, kernel_size=3, stride=2, padding=1),
             nn.ELU(inplace=True),
             nn.BatchNorm2d(16),
-            nn.Dropout2d(p=0.25),
+            nn.Dropout2d(p=0.5),
         )
         self.lstm_encoder = nn.ModuleList([
             nn.LSTM(32, 64, 1, batch_first=True)
@@ -114,14 +114,15 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
             nn.LSTM(2, 64, 1, batch_first=True)
         ])
         self.output_linear = nn.Sequential(nn.BatchNorm1d(64),
+                                           nn.Dropout(0.75),
                                            nn.Linear(64, 32),
                                            nn.ELU(inplace=True),
                                            nn.BatchNorm1d(32),
-                                           nn.Dropout(0.5),
+                                           nn.Dropout(0.75),
                                            nn.Linear(32, 16),
                                            nn.ELU(inplace=True),
                                            nn.BatchNorm1d(16),
-                                           nn.Dropout(0.5),
+                                           nn.Dropout(0.75),
                                            nn.Linear(16, 2),
                                            nn.Sigmoid())
 
