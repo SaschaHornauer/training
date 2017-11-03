@@ -14,8 +14,7 @@ class Fire(nn.Module):
         """Sets up layers for Fire module"""
         super(Fire, self).__init__()
         self.final_output = nn.Sequential(
-            torch.nn.BatchNorm2d(expand1x1_planes + expand3x3_planes),
-            torch.nn.Dropout2d(0.3)
+            torch.nn.BatchNorm2d(expand1x1_planes + expand3x3_planes)
         )
         self.inplanes = inplanes
         self.squeeze = nn.Conv2d(inplanes, squeeze_planes, kernel_size=1)
@@ -51,12 +50,8 @@ class SqueezeNet(nn.Module):
         self.final_output = nn.Sequential(
             nn.Conv2d(6 * self.n_frames, 12, kernel_size=3, stride=1, padding=1),
             nn.LeakyReLU(negative_slope=0.2, inplace=True),
-            nn.BatchNorm2d(12),
-            nn.Dropout2d(p=0.2),
             nn.Conv2d(12, 16, kernel_size=3, stride=1, padding=1),
             nn.LeakyReLU(negative_slope=0.2, inplace=True),
-            nn.BatchNorm2d(16),
-            nn.Dropout2d(p=0.2),
             nn.Conv2d(16, 16, kernel_size=3, stride=2),
             nn.LeakyReLU(negative_slope=0.2, inplace=True),
             nn.BatchNorm2d(16),
@@ -69,6 +64,7 @@ class SqueezeNet(nn.Module):
             nn.AvgPool2d(kernel_size=3, stride=2, ceil_mode=True),
             Fire(32, 16, 16, 16),
             Fire(32, 24, 24, 24),
+            nn.Dropout2d(p=0.5),
             Fire(48, 24, 24, 24),
             Fire(48, 32, 32, 32),
             nn.AvgPool2d(kernel_size=3, stride=2, ceil_mode=True),
