@@ -83,13 +83,13 @@ class SqueezeNet(nn.Module):
         for mod in self.modules():
             if hasattr(mod, 'weight') and hasattr(mod.weight, 'data'):
                 if isinstance(mod, nn.Conv2d):
-                    init.xavier_normal(mod.weight.data, gain=1.5)
-                elif len(mod.weight.data.size()) >= 2:
-                    init.xavier_normal(mod.weight.data)
-                else:
-                    init.normal(mod.weight.data)
-            if hasattr(mod, 'bias') and hasattr(mod.bias, 'data'):
-                init.normal(mod.bias.data, 0.01)
+                    init.xavier_normal(mod.weight.data, gain=1.2)
+            #     elif len(mod.weight.data.size()) >= 2:
+            #         init.xavier_normal(mod.weight.data)
+            #     else:
+            #         init.normal(mod.weight.data)
+            # if hasattr(mod, 'bias') and hasattr(mod.bias, 'data'):
+            #     init.normal(mod.bias.data, 0.01)
 
     def forward(self, x, metadata):
         x = self.final_output(x)
