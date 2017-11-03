@@ -11,8 +11,12 @@ class Fire(nn.Module):
 
     def __init__(self, inplanes, squeeze_planes,
                  expand1x1_planes, expand3x3_planes):
+        """Sets up layers for Fire module"""
         super(Fire, self).__init__()
-        self.norm = torch.nn.BatchNorm2d(expand1x1_planes + expand3x3_planes)
+        self.final_output = nn.Sequential(
+            torch.nn.Dropout2d(0.3),
+            torch.nn.BatchNorm2d(expand1x1_planes + expand3x3_planes)
+        )
         self.inplanes = inplanes
         self.squeeze = nn.Conv2d(inplanes, squeeze_planes, kernel_size=1)
         self.squeeze_activation = nn.LeakyReLU(negative_slope=0.2, inplace=True)
@@ -32,8 +36,9 @@ class Fire(nn.Module):
             self.expand3x3_activation(self.expand3x3(output_data))
         ], 1)
         output_data = output_data + input_data if self.should_iterate else output_data
-        output_data = self.norm(output_data)
+        output_data = self.final_output(output_data)
         return output_data
+
 
 
 class SqueezeNet(nn.Module):
@@ -46,37 +51,40 @@ class SqueezeNet(nn.Module):
         self.final_output = nn.Sequential(
             nn.Conv2d(6 * self.n_frames, 12, kernel_size=3, stride=1, padding=1),
             nn.LeakyReLU(negative_slope=0.2, inplace=True),
+            nn.Dropout2d(p=0.2),
             nn.BatchNorm2d(12),
             nn.Conv2d(12, 16, kernel_size=3, stride=1, padding=1),
             nn.LeakyReLU(negative_slope=0.2, inplace=True),
+            nn.Dropout2d(p=0.2),
             nn.BatchNorm2d(16),
             nn.Conv2d(16, 16, kernel_size=3, stride=2),
             nn.LeakyReLU(negative_slope=0.2, inplace=True),
             nn.AvgPool2d(kernel_size=3, stride=2, ceil_mode=True),
+            nn.Dropout2d(p=0.2),
             nn.BatchNorm2d(16),
 
-            nn.Dropout2d(p=0.5),
             Fire(16, 4, 8, 8),
             Fire(16, 12, 12, 12),
             Fire(24, 16, 16, 16),
             nn.AvgPool2d(kernel_size=3, stride=2, ceil_mode=True),
             Fire(32, 16, 16, 16),
             Fire(32, 24, 24, 24),
-            nn.Dropout2d(p=0.5),
             Fire(48, 24, 24, 24),
             Fire(48, 32, 32, 32),
             nn.AvgPool2d(kernel_size=3, stride=2, ceil_mode=True),
             Fire(64, 32, 32, 32),
-
-            nn.Conv2d(64, 32, kernel_size=3, stride=2, padding=1),
+            nn.Conv2d(64, 48, kernel_size=3, stride=2, padding=1),
             nn.LeakyReLU(negative_slope=0.2, inplace=True),
+            nn.Dropout2d(p=0.25),
+            nn.BatchNorm2d(48),
+            nn.Conv2d(48, 32, kernel_size=3, stride=2, padding=1),
+            nn.LeakyReLU(negative_slope=0.2, inplace=True),
+            nn.Dropout2d(p=0.25),
             nn.BatchNorm2d(32),
-            nn.Dropout2d(p=0.5),
-            nn.Conv2d(32, 16, kernel_size=3, stride=2, padding=1),
+            nn.Conv2d(32, 32, kernel_size=3, stride=2, padding=1),
             nn.LeakyReLU(negative_slope=0.2, inplace=True),
-            nn.BatchNorm2d(16),
-            nn.Dropout2d(p=0.5),
-            nn.Conv2d(16, self.n_steps, kernel_size=3, stride=2, padding=1),
+            nn.Dropout2d(p=0.25),
+            nn.BatchNorm2d(32),
             nn.Sigmoid(),
         )
 
