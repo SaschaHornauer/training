@@ -21,7 +21,7 @@ class Fire(nn.Module):  # pylint: disable=too-few-public-methods
         """Sets up layers for Fire module"""
         super(Fire, self).__init__()
         self.final_output = nn.Sequential(
-            # torch.nn.BatchNorm2d(expand1x1_planes + expand3x3_planes)
+            torch.nn.BatchNorm2d(expand1x1_planes + expand3x3_planes)
         )
         self.inplanes = inplanes
         self.squeeze = nn.Conv2d(inplanes, squeeze_planes, kernel_size=1)
@@ -34,6 +34,17 @@ class Fire(nn.Module):  # pylint: disable=too-few-public-methods
         self.expand3x3_activation = nn.LeakyReLU(negative_slope=0.2, inplace=True)
         self.should_iterate = inplanes == (expand3x3_planes + expand1x1_planes)
 
+        for mod in self.modules():
+            if hasattr(mod, 'weight') and hasattr(mod.weight, 'data'):
+                if isinstance(mod, nn.Conv2d):
+                    init.kaiming_uniform(mod.weight.data)
+                elif len(mod.weight.data.size()) >= 2:
+                    init.xavier_uniform(mod.weight.data)
+                else:
+                    init.normal(mod.weight.data)
+            if hasattr(mod, 'bias') and hasattr(mod.bias, 'data'):
+                init.normal(mod.bias.data, 0.0001)
+
     def forward(self, input_data):
         """Forward-propagates data through Fire module"""
         output_data = self.squeeze_activation(self.squeeze(input_data))
@@ -42,7 +53,7 @@ class Fire(nn.Module):  # pylint: disable=too-few-public-methods
             self.expand3x3_activation(self.expand3x3(output_data))
         ], 1)
         output_data = output_data + input_data if self.should_iterate else output_data
-        # output_data = self.final_output(output_data)
+        output_data = self.final_output(output_data)
         return output_data
 
 
@@ -69,8 +80,8 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
             nn.Conv2d(16, 16, kernel_size=3, stride=2),
             nn.LeakyReLU(negative_slope=0.2, inplace=True),
             nn.BatchNorm2d(16),
-            nn.Dropout2d(p=0.2),
             nn.AvgPool2d(kernel_size=3, stride=2, ceil_mode=True),
+            nn.Dropout2d(p=0.2),
 
             Fire(16, 4, 8, 8),
             Fire(16, 12, 12, 12),
@@ -84,7 +95,7 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
             nn.AvgPool2d(kernel_size=3, stride=2, ceil_mode=True),
             Fire(64, 32, 32, 32),
             nn.Conv2d(64, 48, kernel_size=3, stride=2, padding=1),
-            nn.LeakyReLU(negative_slope=0.2, inplace=True),
+            nn.ELU(inplace=True),
             nn.BatchNorm2d(48),
             nn.Dropout2d(p=0.5),
             nn.Conv2d(48, 32, kernel_size=3, stride=2, padding=1),
@@ -150,7 +161,7 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
             for lstm in self.lstm_decoder:
                 for i in range(self.n_steps):
                     if i == 0:
-                        init_input = Variable(torch.ones(batch_size, 1, 2) * 0.5)
+                        init_input = Variable(torch.zeros(batch_size, 1, 2))
                         init_input = init_input.cuda() if self.is_cuda else init_input
                         lstm_output, last_hidden_cell = lstm(init_input, last_hidden_cell)
                     else:

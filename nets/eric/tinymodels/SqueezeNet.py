@@ -18,13 +18,13 @@ class Fire(nn.Module):
         )
         self.inplanes = inplanes
         self.squeeze = nn.Conv2d(inplanes, squeeze_planes, kernel_size=1)
-        self.squeeze_activation = nn.LeakyReLU(negative_slope=0.2, inplace=True)
+        self.squeeze_activation = nn.ELU(inplace=True)
         self.expand1x1 = nn.Conv2d(squeeze_planes, expand1x1_planes,
                                    kernel_size=1)
-        self.expand1x1_activation = nn.LeakyReLU(negative_slope=0.2, inplace=True)
+        self.expand1x1_activation = nn.ELU(inplace=True)
         self.expand3x3 = nn.Conv2d(squeeze_planes, expand3x3_planes,
                                    kernel_size=3, padding=1)
-        self.expand3x3_activation = nn.LeakyReLU(negative_slope=0.2, inplace=True)
+        self.expand3x3_activation = nn.ELU(inplace=True)
         self.should_iterate = inplanes == (expand3x3_planes + expand1x1_planes)
 
     def forward(self, input_data):
@@ -49,16 +49,16 @@ class SqueezeNet(nn.Module):
         self.n_frames = n_frames
         self.final_output = nn.Sequential(
             nn.Conv2d(6 * self.n_frames, 12, kernel_size=3, stride=1, padding=1),
-            nn.LeakyReLU(negative_slope=0.2, inplace=True),
+            nn.ELU(inplace=True),
             nn.BatchNorm2d(12),
             nn.Conv2d(12, 16, kernel_size=3, stride=1, padding=1),
-            nn.LeakyReLU(negative_slope=0.2, inplace=True),
+            nn.ELU(inplace=True),
             nn.BatchNorm2d(16),
             nn.Conv2d(16, 16, kernel_size=3, stride=2),
-            nn.LeakyReLU(negative_slope=0.2, inplace=True),
+            nn.ELU(inplace=True),
             nn.BatchNorm2d(16),
-            nn.Dropout2d(p=0.2),
             nn.AvgPool2d(kernel_size=3, stride=2, ceil_mode=True),
+            nn.Dropout2d(p=0.2),
 
             Fire(16, 4, 8, 8),
             Fire(16, 12, 12, 12),
@@ -72,15 +72,15 @@ class SqueezeNet(nn.Module):
             nn.AvgPool2d(kernel_size=3, stride=2, ceil_mode=True),
             Fire(64, 32, 32, 32),
             nn.Conv2d(64, 48, kernel_size=3, stride=2, padding=1),
-            nn.LeakyReLU(negative_slope=0.2, inplace=True),
+            nn.ELU(inplace=True),
             nn.BatchNorm2d(48),
             nn.Dropout2d(p=0.5),
             nn.Conv2d(48, 32, kernel_size=3, stride=2, padding=1),
-            nn.LeakyReLU(negative_slope=0.2, inplace=True),
+            nn.ELU(inplace=True),
             nn.BatchNorm2d(32),
             nn.Dropout2d(p=0.5),
             nn.Conv2d(32, self.n_steps, kernel_size=3, stride=2, padding=1),
-            nn.LeakyReLU(negative_slope=0.2, inplace=True),
+            nn.ELU(inplace=True),
             nn.Sigmoid(),
         )
 
