@@ -162,7 +162,7 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
             for lstm in self.lstm_decoder:
                 for i in range(self.n_steps):
                     if i == 0:
-                        init_input = Variable(torch.zeros(batch_size, 1, 2))
+                        init_input = Variable(torch.ones(batch_size, 1, 2) * 0.5)
                         init_input = init_input.cuda() if self.is_cuda else init_input
                         lstm_output, last_hidden_cell = lstm(init_input, last_hidden_cell)
                     else:
