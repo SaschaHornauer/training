@@ -64,7 +64,7 @@ class Feedforward(nn.Module):
                 else:
                     init.normal(mod.weight.data)
             if hasattr(mod, 'bias') and hasattr(mod.bias, 'data'):
-                init.normal(mod.bias.data)
+                init.normal(mod.bias.data, 0.0001)
 
     def forward(self, x, metadata):
         x = self.norm0(self.pre_metadata_features(x))
