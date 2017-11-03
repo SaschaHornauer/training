@@ -62,8 +62,10 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
         self.pre_lstm_output = nn.Sequential(
             nn.Conv2d(6, 12, kernel_size=3, stride=1, padding=1),
             nn.LeakyReLU(negative_slope=0.2, inplace=True),
+            nn.BatchNorm2d(12),
             nn.Conv2d(12, 16, kernel_size=3, stride=1, padding=1),
             nn.LeakyReLU(negative_slope=0.2, inplace=True),
+            nn.BatchNorm2d(16),
             nn.Conv2d(16, 16, kernel_size=3, stride=2),
             nn.LeakyReLU(negative_slope=0.2, inplace=True),
             nn.BatchNorm2d(16),
@@ -83,9 +85,11 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
             Fire(64, 32, 32, 32),
             nn.Conv2d(64, 48, kernel_size=3, stride=2, padding=1),
             nn.LeakyReLU(negative_slope=0.2, inplace=True),
+            nn.BatchNorm2d(48),
             nn.Dropout2d(p=0.5),
             nn.Conv2d(48, 32, kernel_size=3, stride=2, padding=1),
             nn.LeakyReLU(negative_slope=0.2, inplace=True),
+            nn.BatchNorm2d(32),
             nn.Dropout2d(p=0.5),
             nn.Conv2d(32, 32, kernel_size=3, stride=2, padding=1),
             nn.LeakyReLU(negative_slope=0.2, inplace=True),
@@ -101,23 +105,25 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
         self.output_linear = nn.Sequential(nn.BatchNorm1d(128),
                                            nn.Linear(128, 64),
                                            nn.LeakyReLU(negative_slope=0.2, inplace=True),
+                                           nn.BatchNorm1d(64),
                                            nn.Dropout(0.5),
                                            nn.Linear(64, 32),
                                            nn.LeakyReLU(negative_slope=0.2, inplace=True),
+                                           nn.BatchNorm1d(32),
                                            nn.Dropout(0.5),
                                            nn.Linear(32, 2),
                                            nn.Sigmoid())
 
-        for mod in self.modules():
-            if isinstance(mod, nn.BatchNorm2d):
-                continue
-            if hasattr(mod, 'weight') and hasattr(mod.weight, 'data'):
-                if isinstance(mod, nn.Conv2d):
-                    init.kaiming_uniform(mod.weight.data)
-                elif len(mod.weight.data.size()) >= 2:
-                    init.xavier_normal(mod.weight.data)
-            # if hasattr(mod, 'bias') and hasattr(mod.bias, 'data'):
-            #     init.normal(mod.bias.data, 0.0001)
+        # for mod in self.modules():
+        #     if isinstance(mod, nn.BatchNorm2d):
+        #         continue
+        #     if hasattr(mod, 'weight') and hasattr(mod.weight, 'data'):
+        #         if isinstance(mod, nn.Conv2d):
+        #             init.kaiming_uniform(mod.weight.data)
+        #         elif len(mod.weight.data.size()) >= 2:
+        #             init.xavier_normal(mod.weight.data)
+        #     # if hasattr(mod, 'bias') and hasattr(mod.bias, 'data'):
+        #     #     init.normal(mod.bias.data, 0.0001)
         # self.is_generating = False
 
 
