@@ -82,9 +82,10 @@ class SqueezeNet(nn.Module):
 
         for mod in self.modules():
             if hasattr(mod, 'weight') and hasattr(mod.weight, 'data'):
-                if isinstance(mod, nn.Conv2d):
-                    init.kaiming_uniform(mod.weight.data, gain=2)
-                elif len(mod.weight.data.size()) >= 2:
+                # if isinstance(mod, nn.Conv2d):
+                #     init.kaiming_uniform(mod.weight.data)
+                # el
+                if len(mod.weight.data.size()) >= 2:
                     init.xavier_uniform(mod.weight.data, gain=2)
                 else:
                     init.normal(mod.weight.data)
