@@ -117,7 +117,7 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
                 else:
                     init.normal(mod.weight.data)
             if hasattr(mod, 'bias') and hasattr(mod.bias, 'data'):
-                init.normal(mod.bias.data)
+                init.normal(mod.bias.data, 0.001)
         # self.is_generating = False
 
 
