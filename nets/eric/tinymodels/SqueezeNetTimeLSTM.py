@@ -83,17 +83,14 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
             Fire(64, 32, 32, 32),
             nn.Conv2d(64, 48, kernel_size=3, stride=2, padding=1),
             nn.LeakyReLU(negative_slope=0.2, inplace=True),
-            nn.BatchNorm2d(48),
             nn.Dropout2d(p=0.5),
             nn.Conv2d(48, 32, kernel_size=3, stride=2, padding=1),
             nn.LeakyReLU(negative_slope=0.2, inplace=True),
-            nn.BatchNorm2d(32),
             nn.Dropout2d(p=0.5),
             nn.Conv2d(32, 32, kernel_size=3, stride=2, padding=1),
             nn.LeakyReLU(negative_slope=0.2, inplace=True),
             nn.BatchNorm2d(32),
             nn.Dropout2d(p=0.25),
-
         )
         self.lstm_encoder = nn.ModuleList([
             nn.LSTM(64, 128, 1, batch_first=True)
@@ -104,11 +101,9 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
         self.output_linear = nn.Sequential(nn.BatchNorm1d(128),
                                            nn.Linear(128, 64),
                                            nn.LeakyReLU(negative_slope=0.2, inplace=True),
-                                           nn.BatchNorm1d(64),
                                            nn.Dropout(0.5),
                                            nn.Linear(64, 32),
                                            nn.LeakyReLU(negative_slope=0.2, inplace=True),
-                                           nn.BatchNorm1d(32),
                                            nn.Dropout(0.5),
                                            nn.Linear(32, 2),
                                            nn.Sigmoid())
