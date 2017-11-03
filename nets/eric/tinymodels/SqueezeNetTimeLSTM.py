@@ -22,7 +22,7 @@ class Fire(nn.Module):  # pylint: disable=too-few-public-methods
         super(Fire, self).__init__()
         self.final_output = nn.Sequential(
             torch.nn.BatchNorm2d(expand1x1_planes + expand3x3_planes),
-            nn.Dropout2d(p=0.75)
+            nn.Dropout2d(p=0.2)
         )
         self.inplanes = inplanes
         self.squeeze = nn.Conv2d(inplanes, squeeze_planes, kernel_size=1)
@@ -80,7 +80,7 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
             nn.ELU(inplace=True),
             nn.BatchNorm2d(16),
             nn.AvgPool2d(kernel_size=3, stride=2, ceil_mode=True),
-            nn.Dropout2d(p=0.2),
+            nn.Dropout2d(p=0.1),
 
             Fire(16, 4, 8, 8),
             Fire(16, 12, 12, 12),
@@ -97,15 +97,15 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
             nn.Conv2d(64, 32, kernel_size=3, stride=2, padding=1),
             nn.ELU(inplace=True),
             nn.BatchNorm2d(32),
-            nn.Dropout2d(p=0.75),
+            nn.Dropout2d(p=0.2),
             nn.Conv2d(32, 16, kernel_size=3, stride=2, padding=1),
             nn.ELU(inplace=True),
             nn.BatchNorm2d(16),
-            nn.Dropout2d(p=0.5),
+            nn.Dropout2d(p=0.2),
             nn.Conv2d(16, 16, kernel_size=3, stride=2, padding=1),
             nn.ELU(inplace=True),
             nn.BatchNorm2d(16),
-            nn.Dropout2d(p=0.5),
+            nn.Dropout2d(p=0.2),
         )
         self.lstm_encoder = nn.ModuleList([
             nn.LSTM(32, 64, 1, batch_first=True)
@@ -114,15 +114,15 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
             nn.LSTM(2, 64, 1, batch_first=True)
         ])
         self.output_linear = nn.Sequential(nn.BatchNorm1d(64),
-                                           nn.Dropout(0.5),
+                                           nn.Dropout(0.2),
                                            nn.Linear(64, 32),
                                            nn.ELU(inplace=True),
                                            nn.BatchNorm1d(32),
-                                           nn.Dropout(0.5),
+                                           nn.Dropout(0.2),
                                            nn.Linear(32, 16),
                                            nn.ELU(inplace=True),
                                            nn.BatchNorm1d(16),
-                                           nn.Dropout(0.5),
+                                           nn.Dropout(0.2),
                                            nn.Linear(16, 2),
                                            nn.Sigmoid())
 
@@ -148,33 +148,44 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
         for lstm in self.lstm_encoder:
             net_output, last_hidden_cell = lstm(net_output)
             last_hidden_cell = list(last_hidden_cell)
-        if (controls is not None): #and (not self.is_generating):
-            for lstm in self.lstm_decoder:
-                if last_hidden_cell:
-                    net_output = lstm(self.get_decoder_seq(controls), last_hidden_cell)[0]
-                    last_hidden_cell = None
-                else:
-                    net_output = lstm(net_output)[0]
-            # net_output = last_hidden_cell[0]
-            net_output = self.output_linear(net_output.contiguous().view(-1, 64))
-        else:
-            list_outputs = []
-            for lstm in self.lstm_decoder:
-                for i in range(self.n_steps):
-                    if i == 0:
-                        init_input = Variable(torch.ones(batch_size, 1, 2) * 0.5)
-                        init_input = init_input.cuda() if self.is_cuda else init_input
-                        lstm_output, last_hidden_cell = lstm(init_input, last_hidden_cell)
-                    else:
-                        for lstm in self.lstm_decoder:
-                            lstm_output, last_hidden_cell = lstm(list_outputs[i-1], last_hidden_cell)
-                    linear = self.output_linear(lstm_output.contiguous().view(-1, 64))
-                    list_outputs.append(linear.unsqueeze(1))
-            net_output = torch.cat(list_outputs, 1)
-        # net_output = self.output_linear(last_hidden_cell[0].contiguous().view(-1, 64))
+        for lstm in self.lstm_decoder:
+            if last_hidden_cell:
+                net_output = lstm(self.get_decoder_input(camera_data), last_hidden_cell)[0]
+                last_hidden_cell = None
+            else:
+                net_output = lstm(net_output)[0]
+        # if (controls is not None): #and (not self.is_generating):
+        #     for lstm in self.lstm_decoder:
+        #         if last_hidden_cell:
+        #             net_output = lstm(self.get_decoder_seq(controls), last_hidden_cell)[0]
+        #             last_hidden_cell = None
+        #         else:
+        #             net_output = lstm(net_output)[0]
+        #     # net_output = last_hidden_cell[0]
+        #     net_output = self.output_linear(net_output.contiguous().view(-1, 64))
+        # else:
+        #     list_outputs = []
+        #     for lstm in self.lstm_decoder:
+        #         for i in range(self.n_steps):
+        #             if i == 0:
+        #                 init_input = Variable(torch.ones(batch_size, 1, 2) * 0.5)
+        #                 init_input = init_input.cuda() if self.is_cuda else init_input
+        #                 lstm_output, last_hidden_cell = lstm(init_input, last_hidden_cell)
+        #             else:
+        #                 for lstm in self.lstm_decoder:
+        #                     lstm_output, last_hidden_cell = lstm(list_outputs[i-1], last_hidden_cell)
+        #             linear = self.output_linear(lstm_output.contiguous().view(-1, 64))
+        #             list_outputs.append(linear.unsqueeze(1))
+        #     net_output = torch.cat(list_outputs, 1)
+        net_output = self.output_linear(net_output.contiguous().view(-1, 64))
         net_output = net_output.contiguous().view(batch_size, -1, 2)
-        # self.is_generating = not self.is_generating
         return net_output
+
+    def get_decoder_input(self, camera_data):
+        batch_size = camera_data.size(0)
+        input = Variable(torch.zeros(batch_size, self.n_steps, 2))
+        return input.cuda() if self.is_cuda else input
+
 
     def get_decoder_seq(self, controls):
         controls = controls.clone()
@@ -202,6 +213,7 @@ def unit_test():
         # torch.randn(1, 1, 2)
     )
     sizes = [2, 5, 2]
+    print test_net_output.size()
     assert(all(test_net_output.size(i) == sizes[i] for i in range(len(sizes))))
     logging.debug('Net Test Output = {}'.format(test_net_output))
     logging.debug('Network was Unit Tested')
