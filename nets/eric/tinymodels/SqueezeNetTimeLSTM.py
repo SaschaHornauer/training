@@ -109,13 +109,15 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
                                            nn.Sigmoid())
 
         for mod in self.modules():
+            if isinstance(mod, nn.BatchNorm2d):
+                continue
             if hasattr(mod, 'weight') and hasattr(mod.weight, 'data'):
                 if isinstance(mod, nn.Conv2d):
-                    init.xavier_normal(mod.weight.data, gain=1.1)
+                    init.kaiming_uniform(mod.weight.data)
                 elif len(mod.weight.data.size()) >= 2:
                     init.xavier_normal(mod.weight.data)
-            if hasattr(mod, 'bias') and hasattr(mod.bias, 'data'):
-                init.normal(mod.bias.data, 0.0001)
+            # if hasattr(mod, 'bias') and hasattr(mod.bias, 'data'):
+            #     init.normal(mod.bias.data, 0.0001)
         # self.is_generating = False
 
 
