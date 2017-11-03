@@ -6,6 +6,16 @@
     "validation_loss": "./logs/tinymodels/timelstm_valloss.log"
   },
 
+  "training": {
+    "dataset": {
+      "path": "/hostroot/home/ehou/trainingSmallEpochs/training/data/train/",
+      "p_subsample": 0.0001,
+      "batch_size": 32,
+      "shuffle": true,
+      "train_ratio": 1.0
+    }
+  },
+
   "model": {
     "name": "timelstm",
     "py_path": "nets.eric.tinymodels.SqueezeNetTimeLSTM",
