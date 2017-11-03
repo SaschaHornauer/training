@@ -18,7 +18,7 @@ class Feedforward(nn.Module):
             nn.LeakyReLU(negative_slope=0.2, inplace=True),
             nn.Conv2d(12, 12, kernel_size=3, padding=1),
             nn.LeakyReLU(negative_slope=0.2, inplace=True),
-            nn.Dropout2d(p=0.25),
+            nn.Dropout2d(p=0.5),
         )
         self.post_metadata_features = nn.Sequential(
             nn.Conv2d(12, 16, kernel_size=3, padding=1),
