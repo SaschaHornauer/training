@@ -81,10 +81,10 @@ class SqueezeNet(nn.Module):
             nn.LeakyReLU(negative_slope=0.2, inplace=True),
             nn.Dropout2d(p=0.25),
             nn.BatchNorm2d(32),
-            nn.Conv2d(32, 32, kernel_size=3, stride=2, padding=1),
+            nn.Conv2d(32, self.n_steps, kernel_size=3, stride=2, padding=1),
             nn.LeakyReLU(negative_slope=0.2, inplace=True),
             nn.Dropout2d(p=0.25),
-            nn.BatchNorm2d(32),
+            nn.BatchNorm2d(self.n_steps),
             nn.Sigmoid(),
         )
 
