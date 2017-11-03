@@ -21,7 +21,7 @@ class Fire(nn.Module):  # pylint: disable=too-few-public-methods
         """Sets up layers for Fire module"""
         super(Fire, self).__init__()
         self.final_output = nn.Sequential(
-            torch.nn.BatchNorm2d(expand1x1_planes + expand3x3_planes)
+            # torch.nn.BatchNorm2d(expand1x1_planes + expand3x3_planes)
         )
         self.inplanes = inplanes
         self.squeeze = nn.Conv2d(inplanes, squeeze_planes, kernel_size=1)
@@ -42,7 +42,7 @@ class Fire(nn.Module):  # pylint: disable=too-few-public-methods
             self.expand3x3_activation(self.expand3x3(output_data))
         ], 1)
         output_data = output_data + input_data if self.should_iterate else output_data
-        output_data = self.final_output(output_data)
+        # output_data = self.final_output(output_data)
         return output_data
 
 
