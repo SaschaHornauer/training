@@ -75,37 +75,37 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
             nn.AvgPool2d(kernel_size=3, stride=2, ceil_mode=True),
             Fire(32, 16, 16, 16),
             Fire(32, 24, 24, 24),
-            nn.Dropout2d(p=0.5),
+            nn.Dropout2d(p=0.25),
             Fire(48, 24, 24, 24),
             Fire(48, 32, 32, 32),
             nn.AvgPool2d(kernel_size=3, stride=2, ceil_mode=True),
             Fire(64, 32, 32, 32),
-            nn.Conv2d(64, 32, kernel_size=3, stride=2, padding=1),
+            nn.Conv2d(64, 48, kernel_size=3, stride=2, padding=1),
+            nn.LeakyReLU(negative_slope=0.2, inplace=True),
+            nn.BatchNorm2d(48),
+            nn.Dropout2d(p=0.25),
+            nn.Conv2d(48, 32, kernel_size=3, stride=2, padding=1),
             nn.LeakyReLU(negative_slope=0.2, inplace=True),
             nn.BatchNorm2d(32),
-            # nn.Dropout2d(p=0.5),
-            nn.Conv2d(32, 16, kernel_size=3, stride=2, padding=1),
+            nn.Conv2d(32, 32, kernel_size=3, stride=2, padding=1),
             nn.LeakyReLU(negative_slope=0.2, inplace=True),
-            nn.BatchNorm2d(16),
-            nn.Conv2d(16, 16, kernel_size=3, stride=2, padding=1),
-            nn.LeakyReLU(negative_slope=0.2, inplace=True),
-            nn.BatchNorm2d(16),
+            nn.BatchNorm2d(32),
         )
         self.lstm_encoder = nn.ModuleList([
-            nn.LSTM(32, 32, 1, batch_first=True)
+            nn.LSTM(64, 128, 1, batch_first=True)
         ])
         self.lstm_decoder = nn.ModuleList([
-            nn.LSTM(2, 32, 1, batch_first=True)
+            nn.LSTM(2, 128, 1, batch_first=True)
         ])
-        self.output_linear = nn.Sequential(nn.Linear(32, 32),
+        self.output_linear = nn.Sequential(nn.Linear(128, 64),
+                                           nn.LeakyReLU(negative_slope=0.2, inplace=True),
+                                           nn.BatchNorm1d(64),
+                                           nn.Dropout(0.25),
+                                           nn.Linear(64, 32),
                                            nn.LeakyReLU(negative_slope=0.2, inplace=True),
                                            nn.BatchNorm1d(32),
-                                           nn.Dropout(0.5),
-                                           nn.Linear(32, 16),
-                                           nn.LeakyReLU(negative_slope=0.2, inplace=True),
-                                           nn.BatchNorm1d(16),
-                                           nn.Dropout(0.5),
-                                           nn.Linear(16, 2),
+                                           nn.Dropout(0.25),
+                                           nn.Linear(32, 2),
                                            nn.Sigmoid())
 
         for mod in self.modules():
@@ -127,7 +127,7 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
         batch_size = camera_data.size(0)
         net_output = camera_data.contiguous().view(-1, 6, 94, 168)
         net_output = self.pre_lstm_output(net_output)
-        net_output = net_output.contiguous().view(batch_size, -1, 32)
+        net_output = net_output.contiguous().view(batch_size, -1, 64)
         for lstm in self.lstm_encoder:
             net_output, last_hidden_cell = lstm(net_output)
             last_hidden_cell = list(last_hidden_cell)
@@ -139,7 +139,7 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
                 else:
                     net_output = lstm(net_output)[0]
             # net_output = last_hidden_cell[0]
-            net_output = self.output_linear(net_output.contiguous().view(-1, 32))
+            net_output = self.output_linear(net_output.contiguous().view(-1, 128))
         else:
             list_outputs = []
             for lstm in self.lstm_decoder:
@@ -151,7 +151,7 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
                     else:
                         for lstm in self.lstm_decoder:
                             lstm_output, last_hidden_cell = lstm(list_outputs[i-1], last_hidden_cell)
-                    linear = self.output_linear(lstm_output.contiguous().view(-1, 32))
+                    linear = self.output_linear(lstm_output.contiguous().view(-1, 128))
                     list_outputs.append(linear.unsqueeze(1))
             net_output = torch.cat(list_outputs, 1)
         # net_output = self.output_linear(last_hidden_cell[0].contiguous().view(-1, 64))
