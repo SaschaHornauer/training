@@ -21,17 +21,18 @@ class Fire(nn.Module):  # pylint: disable=too-few-public-methods
         """Sets up layers for Fire module"""
         super(Fire, self).__init__()
         self.final_output = nn.Sequential(
-            torch.nn.BatchNorm2d(expand1x1_planes + expand3x3_planes)
+            torch.nn.BatchNorm2d(expand1x1_planes + expand3x3_planes),
+            nn.Dropout2d(p=0.3)
         )
         self.inplanes = inplanes
         self.squeeze = nn.Conv2d(inplanes, squeeze_planes, kernel_size=1)
-        self.squeeze_activation = nn.LeakyReLU(negative_slope=0.2, inplace=True)
+        self.squeeze_activation = nn.ELU(inplace=True)
         self.expand1x1 = nn.Conv2d(squeeze_planes, expand1x1_planes,
                                    kernel_size=1)
-        self.expand1x1_activation = nn.LeakyReLU(negative_slope=0.2, inplace=True)
+        self.expand1x1_activation = nn.ELU(inplace=True)
         self.expand3x3 = nn.Conv2d(squeeze_planes, expand3x3_planes,
                                    kernel_size=3, padding=1)
-        self.expand3x3_activation = nn.LeakyReLU(negative_slope=0.2, inplace=True)
+        self.expand3x3_activation = nn.ELU(inplace=True)
         self.should_iterate = inplanes == (expand3x3_planes + expand1x1_planes)
 
         for mod in self.modules():
@@ -72,13 +73,13 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
         self.n_steps = n_steps
         self.pre_lstm_output = nn.Sequential(
             nn.Conv2d(6, 12, kernel_size=3, stride=1, padding=1),
-            nn.LeakyReLU(negative_slope=0.2, inplace=True),
+            nn.ELU(inplace=True),
             nn.BatchNorm2d(12),
             nn.Conv2d(12, 16, kernel_size=3, stride=1, padding=1),
-            nn.LeakyReLU(negative_slope=0.2, inplace=True),
+            nn.ELU(inplace=True),
             nn.BatchNorm2d(16),
             nn.Conv2d(16, 16, kernel_size=3, stride=2),
-            nn.LeakyReLU(negative_slope=0.2, inplace=True),
+            nn.ELU(inplace=True),
             nn.BatchNorm2d(16),
             nn.AvgPool2d(kernel_size=3, stride=2, ceil_mode=True),
             nn.Dropout2d(p=0.2),
@@ -99,11 +100,11 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
             nn.BatchNorm2d(48),
             nn.Dropout2d(p=0.5),
             nn.Conv2d(48, 32, kernel_size=3, stride=2, padding=1),
-            nn.LeakyReLU(negative_slope=0.2, inplace=True),
+            nn.ELU(inplace=True),
             nn.BatchNorm2d(32),
             nn.Dropout2d(p=0.5),
             nn.Conv2d(32, 32, kernel_size=3, stride=2, padding=1),
-            nn.LeakyReLU(negative_slope=0.2, inplace=True),
+            nn.ELU(inplace=True),
             nn.BatchNorm2d(32),
             nn.Dropout2d(p=0.25),
         )
@@ -115,11 +116,11 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
         ])
         self.output_linear = nn.Sequential(nn.BatchNorm1d(128),
                                            nn.Linear(128, 64),
-                                           nn.LeakyReLU(negative_slope=0.2, inplace=True),
+                                           nn.ELU(inplace=True),
                                            nn.BatchNorm1d(64),
                                            nn.Dropout(0.5),
                                            nn.Linear(64, 32),
-                                           nn.LeakyReLU(negative_slope=0.2, inplace=True),
+                                           nn.ELU(inplace=True),
                                            nn.BatchNorm1d(32),
                                            nn.Dropout(0.5),
                                            nn.Linear(32, 2),

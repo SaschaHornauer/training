@@ -14,7 +14,8 @@ class Fire(nn.Module):
         """Sets up layers for Fire module"""
         super(Fire, self).__init__()
         self.final_output = nn.Sequential(
-            torch.nn.BatchNorm2d(expand1x1_planes + expand3x3_planes)
+            torch.nn.BatchNorm2d(expand1x1_planes + expand3x3_planes),
+            nn.Dropout2d(p=0.3)
         )
         self.inplanes = inplanes
         self.squeeze = nn.Conv2d(inplanes, squeeze_planes, kernel_size=1)
