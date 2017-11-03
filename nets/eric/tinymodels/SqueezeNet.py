@@ -94,7 +94,7 @@ class SqueezeNet(nn.Module):
                 else:
                     init.normal(mod.weight.data)
             if hasattr(mod, 'bias') and hasattr(mod.bias, 'data'):
-                init.normal(mod.bias.data, 0.0001)
+                init.normal(mod.bias.data, mean=0, std=0.00001)
 
     def forward(self, x, metadata):
         x = self.final_output(x)
