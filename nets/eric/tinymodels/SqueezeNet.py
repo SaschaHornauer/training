@@ -86,7 +86,7 @@ class SqueezeNet(nn.Module):
                 #     init.kaiming_uniform(mod.weight.data)
                 # el
                 if len(mod.weight.data.size()) >= 2:
-                    init.xavier_uniform(mod.weight.data, gain=2)
+                    init.xavier_normal(mod.weight.data, gain=1.5)
                 else:
                     init.normal(mod.weight.data)
             if hasattr(mod, 'bias') and hasattr(mod.bias, 'data'):
