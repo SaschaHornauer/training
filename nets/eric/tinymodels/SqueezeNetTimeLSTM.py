@@ -125,6 +125,10 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
                                            nn.Sigmoid())
 
         for mod in self.modules():
+            if isinstance(mod, torch.nn.LSTM):
+                for param in mod.parameters():
+                    if len(param.data.size()) >= 2:
+                        init.xavier_uniform(param)
             if hasattr(mod, 'weight') and hasattr(mod.weight, 'data'):
                 if isinstance(mod, nn.Conv2d):
                     init.kaiming_uniform(mod.weight.data)
