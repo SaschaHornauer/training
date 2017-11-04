@@ -22,7 +22,7 @@ class Fire(nn.Module):  # pylint: disable=too-few-public-methods
         super(Fire, self).__init__()
         self.final_output = nn.Sequential(
             torch.nn.BatchNorm2d(expand1x1_planes + expand3x3_planes),
-            nn.Dropout2d(p=0.2)
+            nn.Dropout2d(p=0.05)
         )
         self.inplanes = inplanes
         self.squeeze = nn.Conv2d(inplanes, squeeze_planes, kernel_size=1)
@@ -80,7 +80,7 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
             nn.ELU(inplace=True),
             nn.BatchNorm2d(16),
             nn.AvgPool2d(kernel_size=3, stride=2, ceil_mode=True),
-            nn.Dropout2d(p=0.1),
+            nn.Dropout2d(p=0.2),
 
             Fire(16, 4, 8, 8),
             Fire(16, 12, 12, 12),
@@ -97,15 +97,12 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
             nn.Conv2d(64, 32, kernel_size=3, stride=2, padding=1),
             nn.ELU(inplace=True),
             nn.BatchNorm2d(32),
-            nn.Dropout2d(p=0.2),
             nn.Conv2d(32, 16, kernel_size=3, stride=2, padding=1),
             nn.ELU(inplace=True),
             nn.BatchNorm2d(16),
-            nn.Dropout2d(p=0.2),
             nn.Conv2d(16, 16, kernel_size=3, stride=2, padding=1),
             nn.ELU(inplace=True),
             nn.BatchNorm2d(16),
-            nn.Dropout2d(p=0.2),
         )
         self.lstm_encoder = nn.ModuleList([
             nn.LSTM(32, 64, 1, batch_first=True)
@@ -168,9 +165,10 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
             for lstm in self.lstm_decoder:
                 for i in range(self.n_steps):
                     if i == 0:
-                        init_input = Variable(torch.ones(batch_size, 1, 2) * 0.5)
+                        init_input = self.output_linear(last_hidden_cell[0].squeeze(0)).unsqueeze(1)
                         init_input = init_input.cuda() if self.is_cuda else init_input
                         lstm_output, last_hidden_cell = lstm(init_input, last_hidden_cell)
+                        print last_hidden_cell[0].size()
                     else:
                         for lstm in self.lstm_decoder:
                             lstm_output, last_hidden_cell = lstm(list_outputs[i-1], last_hidden_cell)
