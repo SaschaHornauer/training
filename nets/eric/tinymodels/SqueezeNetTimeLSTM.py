@@ -128,16 +128,18 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
             if isinstance(mod, torch.nn.LSTM):
                 for param in mod.parameters():
                     if len(param.data.size()) >= 2:
-                        init.xavier_uniform(param)
+                        init.xavier_normal(param)
             if hasattr(mod, 'weight') and hasattr(mod.weight, 'data'):
                 if isinstance(mod, nn.Conv2d):
                     init.kaiming_uniform(mod.weight.data)
                 elif len(mod.weight.data.size()) >= 2:
-                    init.xavier_uniform(mod.weight.data)
+                    init.xavier_normal(mod.weight.data)
                 else:
                     init.normal(mod.weight.data)
             if hasattr(mod, 'bias') and hasattr(mod.bias, 'data'):
-                init.normal(mod.bias.data, mean=0, std=0.00001)
+                init.normal(mod.bias.data, mean=0, std=0.0001)
+            else:
+                init.normal(mod.data, mean=0, std=0.0001)
 
 
 

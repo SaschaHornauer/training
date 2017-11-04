@@ -6,6 +6,12 @@
     "validation_loss": "./logs/tinymodels/timelstm_valloss.log"
   },
 
+    "training": {
+    "dataset": {
+      "batch_size": 128
+    }
+  },
+
   "model": {
     "name": "timelstm",
     "py_path": "nets.eric.tinymodels.SqueezeNetTimeLSTM",
