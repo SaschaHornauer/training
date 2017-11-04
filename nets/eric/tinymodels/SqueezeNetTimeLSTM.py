@@ -22,7 +22,7 @@ class Fire(nn.Module):  # pylint: disable=too-few-public-methods
         super(Fire, self).__init__()
         self.final_output = nn.Sequential(
             torch.nn.BatchNorm2d(expand1x1_planes + expand3x3_planes),
-            nn.Dropout2d(p=0.05)
+            nn.Dropout2d(p=0.2)
         )
         self.inplanes = inplanes
         self.squeeze = nn.Conv2d(inplanes, squeeze_planes, kernel_size=1)
@@ -105,21 +105,18 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
             nn.BatchNorm2d(16),
         )
         self.lstm_encoder = nn.ModuleList([
-            nn.LSTM(32, 64, 1, batch_first=True)
+            nn.LSTM(32, 64, 2, batch_first=True)
         ])
         self.lstm_decoder = nn.ModuleList([
-            nn.LSTM(2, 64, 1, batch_first=True)
+            nn.LSTM(2, 64, 2, batch_first=True)
         ])
         self.output_linear = nn.Sequential(nn.BatchNorm1d(64),
-                                           nn.Dropout(0.2),
                                            nn.Linear(64, 32),
                                            nn.ELU(inplace=True),
                                            nn.BatchNorm1d(32),
-                                           nn.Dropout(0.2),
                                            nn.Linear(32, 16),
                                            nn.ELU(inplace=True),
                                            nn.BatchNorm1d(16),
-                                           nn.Dropout(0.2),
                                            nn.Linear(16, 2),
                                            nn.Sigmoid())
 
@@ -165,13 +162,11 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
             for lstm in self.lstm_decoder:
                 for i in range(self.n_steps):
                     if i == 0:
-                        init_input = self.output_linear(last_hidden_cell[0].squeeze(0)).unsqueeze(1)
+                        init_input = self.output_linear(last_hidden_cell[1][0].squeeze(0)).unsqueeze(1)
                         init_input = init_input.cuda() if self.is_cuda else init_input
                         lstm_output, last_hidden_cell = lstm(init_input, last_hidden_cell)
-                        print last_hidden_cell[0].size()
                     else:
-                        for lstm in self.lstm_decoder:
-                            lstm_output, last_hidden_cell = lstm(list_outputs[i-1], last_hidden_cell)
+                        lstm_output, last_hidden_cell = lstm(list_outputs[i-1], last_hidden_cell)
                     linear = self.output_linear(lstm_output.contiguous().view(-1, 64))
                     list_outputs.append(linear.unsqueeze(1))
             net_output = torch.cat(list_outputs, 1)
