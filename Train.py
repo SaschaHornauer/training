@@ -137,6 +137,10 @@ def main():
 
                 loss = iterate(net, loss_func=loss_func, optimizer=optimizer,
                                input=(camera, meta), truth=truth)
+                if epoch == 3:
+                    for param in net.parameters():
+                        if 'grad' in dir(param):
+                            print param.grad
 
                 # Logging Loss
                 train_loss.add(loss)
