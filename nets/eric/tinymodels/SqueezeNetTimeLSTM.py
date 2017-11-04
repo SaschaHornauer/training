@@ -112,8 +112,7 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
         self.lstm_decoder = nn.ModuleList([
             nn.LSTM(2, 32, 1, batch_first=True)
         ])
-        self.output_linear = nn.Sequential(nn.BatchNorm1d(32),
-                                           nn.Dropout(p=0.25),
+        self.output_linear = nn.Sequential(nn.Dropout(p=0.25),
                                            nn.Linear(32, 24),
                                            nn.ELU(inplace=True),
                                            nn.BatchNorm1d(24),
@@ -129,19 +128,15 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
                 for param in mod.parameters():
                     if len(param.data.size()) >= 2:
                         init.xavier_normal(param)
-            if hasattr(mod, 'weight') and hasattr(mod.weight, 'data'):
+            elif hasattr(mod, 'weight') and hasattr(mod.weight, 'data'):
                 if isinstance(mod, nn.Conv2d):
                     init.kaiming_uniform(mod.weight.data)
                 elif len(mod.weight.data.size()) >= 2:
                     init.xavier_normal(mod.weight.data)
                 else:
                     init.normal(mod.weight.data)
-            if hasattr(mod, 'bias') and hasattr(mod.bias, 'data'):
+            elif hasattr(mod, 'bias') and hasattr(mod.bias, 'data'):
                 init.normal(mod.bias.data, mean=0, std=0.0001)
-            else:
-                init.normal(mod.data, mean=0, std=0.0001)
-
-
 
     def forward(self, camera_data, metadata, controls=None):
         """Forward-propagates data through SqueezeNetTimeLSTM"""

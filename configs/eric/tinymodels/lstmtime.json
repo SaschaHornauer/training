@@ -6,7 +6,7 @@
     "validation_loss": "./logs/tinymodels/timelstm_valloss.log"
   },
 
-    "training": {
+  "training": {
     "dataset": {
       "batch_size": 128
     }
