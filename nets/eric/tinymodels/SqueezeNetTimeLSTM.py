@@ -22,7 +22,7 @@ class Fire(nn.Module):  # pylint: disable=too-few-public-methods
         super(Fire, self).__init__()
         self.final_output = nn.Sequential(
             torch.nn.BatchNorm2d(expand1x1_planes + expand3x3_planes),
-            nn.Dropout2d(p=0.2)
+            # nn.Dropout2d(p=0.2)
         )
         self.inplanes = inplanes
         self.squeeze = nn.Conv2d(inplanes, squeeze_planes, kernel_size=1)
@@ -88,7 +88,7 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
             nn.AvgPool2d(kernel_size=3, stride=2, ceil_mode=True),
             Fire(32, 16, 16, 16),
             Fire(32, 24, 24, 24),
-            nn.Dropout2d(p=0.5),
+            # nn.Dropout2d(p=0.5),
             Fire(48, 24, 24, 24),
             Fire(48, 32, 32, 32),
             nn.AvgPool2d(kernel_size=3, stride=2, ceil_mode=True),
