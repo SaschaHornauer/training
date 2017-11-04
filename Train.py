@@ -62,8 +62,7 @@ def iterate(net, loss_func, optimizer=None, input=None, truth=None, train=True):
 
     # Run backprop, gradient clipping
     loss.backward()
-    for param in net.parameters():
-        nnutils.clip_grad_norm([param], 1.)
+    nnutils.clip_grad_norm(net.parameters(), 1.)
 
     # Apply backprop gradients
     optimizer.step()
@@ -138,6 +137,10 @@ def main():
 
                 loss = iterate(net, loss_func=loss_func, optimizer=optimizer,
                                input=(camera, meta), truth=truth)
+                if epoch == 3:
+                    for param in net.parameters():
+                        if 'grad' in dir(param):
+                            print param.grad
 
                 # Logging Loss
                 train_loss.add(loss)
