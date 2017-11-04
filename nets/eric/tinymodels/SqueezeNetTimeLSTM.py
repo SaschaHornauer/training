@@ -148,36 +148,36 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
         for lstm in self.lstm_encoder:
             net_output, last_hidden_cell = lstm(net_output)
             last_hidden_cell = list(last_hidden_cell)
-        for lstm in self.lstm_decoder:
-            if last_hidden_cell:
-                net_output = lstm(self.get_decoder_input(camera_data), last_hidden_cell)[0]
-                last_hidden_cell = None
-            else:
-                net_output = lstm(net_output)[0]
-        # if (controls is not None): #and (not self.is_generating):
-        #     for lstm in self.lstm_decoder:
-        #         if last_hidden_cell:
-        #             net_output = lstm(self.get_decoder_seq(controls), last_hidden_cell)[0]
-        #             last_hidden_cell = None
-        #         else:
-        #             net_output = lstm(net_output)[0]
-        #     # net_output = last_hidden_cell[0]
-        #     net_output = self.output_linear(net_output.contiguous().view(-1, 64))
-        # else:
-        #     list_outputs = []
-        #     for lstm in self.lstm_decoder:
-        #         for i in range(self.n_steps):
-        #             if i == 0:
-        #                 init_input = Variable(torch.ones(batch_size, 1, 2) * 0.5)
-        #                 init_input = init_input.cuda() if self.is_cuda else init_input
-        #                 lstm_output, last_hidden_cell = lstm(init_input, last_hidden_cell)
-        #             else:
-        #                 for lstm in self.lstm_decoder:
-        #                     lstm_output, last_hidden_cell = lstm(list_outputs[i-1], last_hidden_cell)
-        #             linear = self.output_linear(lstm_output.contiguous().view(-1, 64))
-        #             list_outputs.append(linear.unsqueeze(1))
-        #     net_output = torch.cat(list_outputs, 1)
-        net_output = self.output_linear(net_output.contiguous().view(-1, 64))
+        # for lstm in self.lstm_decoder:
+        #     if last_hidden_cell:
+        #         net_output = lstm(self.get_decoder_input(camera_data), last_hidden_cell)[0]
+        #         last_hidden_cell = None
+        #     else:
+        #         net_output = lstm(net_output)[0]
+        if (controls is not None): #and (not self.is_generating):
+            for lstm in self.lstm_decoder:
+                if last_hidden_cell:
+                    net_output = lstm(self.get_decoder_seq(controls), last_hidden_cell)[0]
+                    last_hidden_cell = None
+                else:
+                    net_output = lstm(net_output)[0]
+            # net_output = last_hidden_cell[0]
+            net_output = self.output_linear(net_output.contiguous().view(-1, 64))
+        else:
+            list_outputs = []
+            for lstm in self.lstm_decoder:
+                for i in range(self.n_steps):
+                    if i == 0:
+                        init_input = Variable(torch.ones(batch_size, 1, 2) * 0.5)
+                        init_input = init_input.cuda() if self.is_cuda else init_input
+                        lstm_output, last_hidden_cell = lstm(init_input, last_hidden_cell)
+                    else:
+                        for lstm in self.lstm_decoder:
+                            lstm_output, last_hidden_cell = lstm(list_outputs[i-1], last_hidden_cell)
+                    linear = self.output_linear(lstm_output.contiguous().view(-1, 64))
+                    list_outputs.append(linear.unsqueeze(1))
+            net_output = torch.cat(list_outputs, 1)
+        # net_output = self.output_linear(net_output.contiguous().view(-1, 64))
         net_output = net_output.contiguous().view(batch_size, -1, 2)
         return net_output
 
