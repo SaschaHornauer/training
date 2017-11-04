@@ -42,7 +42,7 @@ class Fire(nn.Module):  # pylint: disable=too-few-public-methods
                 else:
                     init.normal(mod.weight.data)
             if hasattr(mod, 'bias') and hasattr(mod.bias, 'data'):
-                init.normal(mod.bias.data, 0.0001)
+                init.normal(mod.bias.data, mean=0, std=0.00001)
 
     def forward(self, input_data):
         """Forward-propagates data through Fire module"""
