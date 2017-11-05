@@ -45,7 +45,6 @@ def iterate(net, loss_func, optimizer=None, input=None, truth=None, train=True):
     outputs = net(*input).cuda()
     truth = Variable(truth).cuda()
     loss = loss_func(outputs, truth)
-    # loss = (mse_loss(outputs, truth) + linear_loss(outputs, truth)) / 2
 
     try:
         if not train:
@@ -137,10 +136,6 @@ def main():
 
                 loss = iterate(net, loss_func=loss_func, optimizer=optimizer,
                                input=(camera, meta), truth=truth)
-                if epoch == 3:
-                    for param in net.parameters():
-                        if 'grad' in dir(param):
-                            print param.grad
 
                 # Logging Loss
                 train_loss.add(loss)

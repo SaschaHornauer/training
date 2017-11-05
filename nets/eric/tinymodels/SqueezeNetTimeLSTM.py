@@ -120,8 +120,7 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
                                            nn.Linear(24, 16),
                                            nn.ELU(inplace=True),
                                            nn.BatchNorm1d(16),
-                                           nn.Linear(16, 2),
-                                           nn.Sigmoid())
+                                           nn.Linear(16, 2))
 
         for mod in self.modules():
             if isinstance(mod, torch.nn.LSTM):

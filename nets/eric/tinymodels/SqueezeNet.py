@@ -80,9 +80,7 @@ class SqueezeNet(nn.Module):
             nn.ELU(inplace=True),
             nn.BatchNorm2d(32),
             nn.Dropout2d(p=0.5),
-            nn.Conv2d(32, self.n_steps, kernel_size=3, stride=2, padding=1),
-            nn.ELU(inplace=True),
-            nn.Sigmoid(),
+            nn.Conv2d(32, self.n_steps, kernel_size=3, stride=2, padding=1)
         )
 
         for mod in self.modules():
