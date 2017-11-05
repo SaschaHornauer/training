@@ -34,8 +34,7 @@ def iterate(net, loss_func, optimizer=None, input=None, truth=None, train=True):
     if train:
         net.train()
         optimizer.zero_grad()
-        input = tuple([Variable(tensor).cuda() for tensor in input] + ([truth] if ('requires_controls' in dir(net)
-                                                                         and net.requires_controls) else []))
+        input = tuple([Variable(tensor).cuda() for tensor in input])
     else:
         net.eval()
         input = tuple([Variable(tensor).cuda() for tensor in input])

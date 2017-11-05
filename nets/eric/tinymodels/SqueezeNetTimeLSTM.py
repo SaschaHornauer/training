@@ -33,17 +33,6 @@ class Fire(nn.Module):  # pylint: disable=too-few-public-methods
         self.expand3x3_activation = nn.ELU(inplace=True)
         self.should_iterate = inplanes == (expand3x3_planes + expand1x1_planes)
 
-        for mod in self.modules():
-            if hasattr(mod, 'weight') and hasattr(mod.weight, 'data'):
-                if isinstance(mod, nn.Conv2d):
-                    init.kaiming_uniform(mod.weight.data)
-                elif len(mod.weight.data.size()) >= 2:
-                    init.xavier_uniform(mod.weight.data)
-                else:
-                    init.normal(mod.weight.data)
-            if hasattr(mod, 'bias') and hasattr(mod.bias, 'data'):
-                init.normal(mod.bias.data, mean=0, std=0.00001)
-
     def forward(self, input_data):
         """Forward-propagates data through Fire module"""
         output_data = self.squeeze_activation(self.squeeze(input_data))
@@ -127,9 +116,10 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
 
         for mod in self.modules():
             if isinstance(mod, torch.nn.LSTM):
-                for param in mod.parameters():
-                    if len(param.data.size()) >= 2:
-                        init.xavier_normal(param)
+                # for param in mod.parameters():
+                #     if len(param.data.size()) >= 2:
+                #         init.xavier_normal(param)
+                continue
             elif hasattr(mod, 'weight') and hasattr(mod.weight, 'data'):
                 if isinstance(mod, nn.Conv2d):
                     init.kaiming_uniform(mod.weight.data)
