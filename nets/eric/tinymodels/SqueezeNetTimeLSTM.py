@@ -120,7 +120,10 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
                                            nn.Linear(24, 16),
                                            nn.ELU(inplace=True),
                                            nn.BatchNorm1d(16),
-                                           nn.Linear(16, 2))
+                                           nn.Linear(16, 2),
+                                           # nn.Sigmoid()
+                                           )
+        self.output_sig = nn.Sigmoid()
 
         for mod in self.modules():
             if isinstance(mod, torch.nn.LSTM):
@@ -181,6 +184,8 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
             net_output = torch.cat(list_outputs, 1)
         # net_output = self.output_linear(net_output.contiguous().view(-1, 64))
         net_output = net_output.contiguous().view(batch_size, -1, 2)
+        print(net_output[0].transpose(0, 1).contiguous().view(-1))
+        net_output = self.output_sig(net_output)
         return net_output
 
     def get_decoder_input(self, camera_data):
@@ -209,10 +214,8 @@ def unit_test():
     """Tests SqueezeNetTimeLSTM for size constitency"""
     test_net = SqueezeNetTimeLSTM(6, 5)
     test_net_output = test_net(
-        Variable(torch.randn(2, 6*6, 94, 168)),
+        Variable(torch.randn(2, 6 * 6, 94, 168)),
         Variable(torch.randn(2, 6, 8, 23, 41))
-        # ,
-        # torch.randn(1, 1, 2)
     )
     sizes = [2, 5, 2]
     print test_net_output.size()
