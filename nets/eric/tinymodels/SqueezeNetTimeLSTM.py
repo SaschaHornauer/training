@@ -174,7 +174,6 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
             net_output = torch.cat(list_outputs, 1)
         # net_output = self.output_linear(net_output.contiguous().view(-1, 64))
         net_output = net_output.contiguous().view(batch_size, -1, 2)
-        print(net_output[0].transpose(0, 1).contiguous().view(-1))
         net_output = self.output_sig(net_output)
         return net_output
 
