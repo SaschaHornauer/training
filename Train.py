@@ -31,7 +31,7 @@ def iterate(net, loss_func, optimizer=None, input=None, truth=None, train=True):
 \    :return: loss
     """
 
-    if input.size(0) == 1:
+    if input[0].size(0) == 1:
         return 0.
 
     if train:
