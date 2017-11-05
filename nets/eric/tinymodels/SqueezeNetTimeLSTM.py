@@ -123,8 +123,8 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
                     init.xavier_normal(mod.weight.data)
                 else:
                     init.normal(mod.weight.data)
-            elif hasattr(mod, 'bias') and hasattr(mod.bias, 'data'):
-                init.normal(mod.bias.data, mean=0, std=0.000000001)
+            # elif hasattr(mod, 'bias') and hasattr(mod.bias, 'data'):
+            #     init.normal(mod.bias.data, mean=0, std=0.000000001)
 
 
     def forward(self, camera_data, metadata, controls=None):
