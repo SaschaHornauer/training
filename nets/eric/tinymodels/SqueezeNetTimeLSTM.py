@@ -22,14 +22,14 @@ class Fire(nn.Module):  # pylint: disable=too-few-public-methods
         super(Fire, self).__init__()
         self.final_output = nn.Sequential(
             torch.nn.BatchNorm2d(expand1x1_planes + expand3x3_planes),
-            # nn.Dropout2d(p=0.2)
+            nn.Dropout2d(p=0.1)
         )
         self.inplanes = inplanes
-        self.squeeze = nn.Conv2d(inplanes, squeeze_planes, kernel_size=1)
+        self.squeeze = nn.Conv2d(inplanes, squeeze_planes, kernel_size=1, bias=False)
         self.squeeze_activation = nn.ELU(inplace=True)
-        self.expand1x1 = nn.Conv2d(squeeze_planes, expand1x1_planes, kernel_size=1)
+        self.expand1x1 = nn.Conv2d(squeeze_planes, expand1x1_planes, kernel_size=1, bias=False)
         self.expand1x1_activation = nn.ELU(inplace=True)
-        self.expand3x3 = nn.Conv2d(squeeze_planes, expand3x3_planes, kernel_size=3, padding=1)
+        self.expand3x3 = nn.Conv2d(squeeze_planes, expand3x3_planes, kernel_size=3, padding=1, bias=False)
         self.expand3x3_activation = nn.ELU(inplace=True)
         self.should_iterate = inplanes == (expand3x3_planes + expand1x1_planes)
 
@@ -59,13 +59,13 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
         self.n_frames = n_frames
         self.n_steps = n_steps
         self.pre_lstm_output = nn.Sequential(
-            nn.Conv2d(6, 12, kernel_size=3, stride=1, padding=1),
+            nn.Conv2d(6, 12, kernel_size=3, stride=1, padding=1, bias=False),
             nn.ELU(inplace=True),
             nn.BatchNorm2d(12),
-            nn.Conv2d(12, 16, kernel_size=3, stride=1, padding=1),
+            nn.Conv2d(12, 16, kernel_size=3, stride=1, padding=1, bias=False),
             nn.ELU(inplace=True),
             nn.BatchNorm2d(16),
-            nn.Conv2d(16, 16, kernel_size=3, stride=2),
+            nn.Conv2d(16, 16, kernel_size=3, stride=2, bias=False),
             nn.ELU(inplace=True),
             nn.BatchNorm2d(16),
             nn.AvgPool2d(kernel_size=3, stride=2, ceil_mode=True),
@@ -83,15 +83,15 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
             nn.AvgPool2d(kernel_size=3, stride=2, ceil_mode=True),
             Fire(64, 32, 32, 32),
 
-            nn.Conv2d(64, 32, kernel_size=3, stride=2, padding=1),
+            nn.Conv2d(64, 32, kernel_size=3, stride=2, padding=1, bias=False),
             nn.ELU(inplace=True),
             nn.BatchNorm2d(32),
             # nn.Dropout2d(p=0.25),
-            nn.Conv2d(32, 16, kernel_size=3, stride=2, padding=1),
+            nn.Conv2d(32, 16, kernel_size=3, stride=2, padding=1, bias=False),
             nn.ELU(inplace=True),
             nn.BatchNorm2d(16),
             # nn.Dropout2d(p=0.25),
-            nn.Conv2d(16, 16, kernel_size=3, stride=2, padding=1),
+            nn.Conv2d(16, 16, kernel_size=3, stride=2, padding=1, bias=False),
             nn.ELU(inplace=True),
             nn.BatchNorm2d(16),
         )
@@ -102,14 +102,14 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
             nn.LSTM(32, 64, 1, batch_first=True)
         ])
         self.post_lstm_linear = nn.Sequential(
-                                            nn.Dropout(p=.1),
-                                            nn.Linear(64, 32),
+                                            nn.Dropout(p=.2),
+                                            nn.Linear(64, 32, bias=False),
                                             nn.ELU(inplace=True),
                                             nn.BatchNorm1d(32),
                                               )
         self.output_linear = nn.Sequential(
-                                            nn.Dropout(p=.1),
-                                            nn.Linear(32, 16),
+                                            nn.Dropout(p=.2),
+                                            nn.Linear(32, 16, bias=False),
                                             nn.ELU(inplace=True),
                                             nn.BatchNorm1d(16),
                                             nn.Linear(16, 2),
