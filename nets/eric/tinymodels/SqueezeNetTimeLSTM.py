@@ -22,7 +22,7 @@ class Fire(nn.Module):  # pylint: disable=too-few-public-methods
         super(Fire, self).__init__()
         self.final_output = nn.Sequential(
             torch.nn.BatchNorm2d(expand1x1_planes + expand3x3_planes),
-            nn.Dropout2d(p=0.1)
+            nn.Dropout2d(p=0.2)
         )
         self.inplanes = inplanes
         self.squeeze = nn.Conv2d(inplanes, squeeze_planes, kernel_size=1)
@@ -69,7 +69,7 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
             nn.ELU(inplace=True),
             nn.BatchNorm2d(16),
             nn.AvgPool2d(kernel_size=3, stride=2, ceil_mode=True),
-            nn.Dropout2d(p=0.1),
+            nn.Dropout2d(p=0.2),
 
             Fire(16, 4, 8, 8),
             Fire(16, 12, 12, 12),
@@ -77,7 +77,7 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
             nn.AvgPool2d(kernel_size=3, stride=2, ceil_mode=True),
             Fire(32, 16, 16, 16),
             Fire(32, 24, 24, 24),
-            nn.Dropout2d(p=0.1),
+            nn.Dropout2d(p=0.5),
             Fire(48, 24, 24, 24),
             Fire(48, 32, 32, 32),
             nn.AvgPool2d(kernel_size=3, stride=2, ceil_mode=True),
@@ -86,11 +86,11 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
             nn.Conv2d(64, 32, kernel_size=3, stride=2, padding=1),
             nn.ELU(inplace=True),
             nn.BatchNorm2d(32),
-            nn.Dropout2d(p=0.1),
+            nn.Dropout2d(p=0.25),
             nn.Conv2d(32, 16, kernel_size=3, stride=2, padding=1),
             nn.ELU(inplace=True),
             nn.BatchNorm2d(16),
-            nn.Dropout2d(p=0.1),
+            nn.Dropout2d(p=0.25),
             nn.Conv2d(16, 8, kernel_size=3, stride=2, padding=1),
             nn.ELU(inplace=True),
             nn.BatchNorm2d(8),
@@ -101,11 +101,11 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
         self.lstm_decoder = nn.ModuleList([
             nn.LSTM(2, 32, 1, batch_first=True)
         ])
-        self.output_linear = nn.Sequential(nn.Dropout(p=0.1),
+        self.output_linear = nn.Sequential(nn.Dropout(p=0.25),
                                            nn.Linear(32, 24),
                                            nn.ELU(inplace=True),
                                            nn.BatchNorm1d(24),
-                                           nn.Dropout(p=0.1),
+                                           nn.Dropout(p=0.25),
                                            nn.Linear(24, 16),
                                            nn.ELU(inplace=True),
                                            nn.BatchNorm1d(16),
