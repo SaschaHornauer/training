@@ -6,6 +6,9 @@ from torch.autograd import Variable
 import logging
 logging.basicConfig(filename='training.log', level=logging.DEBUG)
 
+activation = nn.ReLU
+pool = nn.MaxPool2d
+
 class Feedforward(nn.Module):
 
     def __init__(self, n_steps=10, n_frames=2):
@@ -15,30 +18,30 @@ class Feedforward(nn.Module):
         self.n_frames = n_frames
         self.pre_metadata_features = nn.Sequential(
             nn.Conv2d(3 * 2 * n_frames, 12, kernel_size=3, stride=2),
-            nn.LeakyReLU(negative_slope=0.2, inplace=True),
+            activation(inplace=True),
             nn.Conv2d(12, 12, kernel_size=3, padding=1),
-            nn.LeakyReLU(negative_slope=0.2, inplace=True),
+            activation(inplace=True),
             nn.Dropout2d(p=0.5),
         )
         self.post_metadata_features = nn.Sequential(
             nn.Conv2d(12, 16, kernel_size=3, padding=1),
-            nn.LeakyReLU(negative_slope=0.2, inplace=True),
-            nn.MaxPool2d(kernel_size=3, stride=2, ceil_mode=True),
+            activation(inplace=True),
+            pool(kernel_size=3, stride=2, ceil_mode=True),
             nn.Conv2d(16, 16, kernel_size=3, padding=1),
-            nn.LeakyReLU(negative_slope=0.2, inplace=True),
+            activation(inplace=True),
             nn.Conv2d(16, 24, kernel_size=3, padding=1),
-            nn.LeakyReLU(negative_slope=0.2, inplace=True),
-            nn.MaxPool2d(kernel_size=3, stride=2, ceil_mode=True),
+            activation(inplace=True),
+            pool(kernel_size=3, stride=2, ceil_mode=True),
             nn.Dropout2d(p=0.5),
         )
         self.pre_final = nn.Sequential(
             nn.Conv2d(24, 24, kernel_size=3, padding=1),
-            nn.LeakyReLU(negative_slope=0.2, inplace=True),
+            activation(inplace=True),
             nn.Conv2d(24, 32, kernel_size=3, padding=1),
-            nn.LeakyReLU(negative_slope=0.2, inplace=True),
-            nn.MaxPool2d(kernel_size=3, stride=2, ceil_mode=True),
+            activation(inplace=True),
+            pool(kernel_size=3, stride=2, ceil_mode=True),
             nn.Conv2d(32, 32, kernel_size=3, padding=1),
-            nn.LeakyReLU(negative_slope=0.2, inplace=True),
+            activation(inplace=True),
             nn.Dropout2d(p=0.5)
         )
         self.norm0 = nn.BatchNorm2d(12)

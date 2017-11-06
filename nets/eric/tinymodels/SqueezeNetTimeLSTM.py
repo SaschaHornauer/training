@@ -12,6 +12,8 @@ logging.basicConfig(filename='training.log', level=logging.DEBUG)
 
 # from Parameters import ARGS
 
+activation = nn.ReLU
+pool = nn.MaxPool2d
 
 class Fire(nn.Module):  # pylint: disable=too-few-public-methods
     """Implementation of Fire module"""
@@ -26,11 +28,11 @@ class Fire(nn.Module):  # pylint: disable=too-few-public-methods
         )
         self.inplanes = inplanes
         self.squeeze = nn.Conv2d(inplanes, squeeze_planes, kernel_size=1)
-        self.squeeze_activation = nn.ELU(inplace=True)
+        self.squeeze_activation = activation(inplace=True)
         self.expand1x1 = nn.Conv2d(squeeze_planes, expand1x1_planes, kernel_size=1)
-        self.expand1x1_activation = nn.ELU(inplace=True)
+        self.expand1x1_activation = activation(inplace=True)
         self.expand3x3 = nn.Conv2d(squeeze_planes, expand3x3_planes, kernel_size=3, padding=1)
-        self.expand3x3_activation = nn.ELU(inplace=True)
+        self.expand3x3_activation = activation(inplace=True)
         self.should_iterate = inplanes == (expand3x3_planes + expand1x1_planes)
 
     def forward(self, input_data):
@@ -60,39 +62,39 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
         self.n_steps = n_steps
         self.pre_lstm_output = nn.Sequential(
             nn.Conv2d(6, 12, kernel_size=3, stride=1, padding=1),
-            nn.ELU(inplace=True),
+            activation(inplace=True),
             nn.BatchNorm2d(12),
             nn.Conv2d(12, 16, kernel_size=3, stride=1, padding=1),
-            nn.ELU(inplace=True),
+            activation(inplace=True),
             nn.BatchNorm2d(16),
             nn.Conv2d(16, 16, kernel_size=3, stride=2),
-            nn.ELU(inplace=True),
+            activation(inplace=True),
             nn.BatchNorm2d(16),
-            nn.AvgPool2d(kernel_size=3, stride=2, ceil_mode=True),
+            pool(kernel_size=3, stride=2, ceil_mode=True),
             nn.Dropout2d(p=0.2),
 
             Fire(16, 4, 8, 8),
             Fire(16, 12, 12, 12),
             Fire(24, 16, 16, 16),
-            nn.AvgPool2d(kernel_size=3, stride=2, ceil_mode=True),
+            pool(kernel_size=3, stride=2, ceil_mode=True),
             Fire(32, 16, 16, 16),
             Fire(32, 24, 24, 24),
             nn.Dropout2d(p=0.5),
             Fire(48, 24, 24, 24),
             Fire(48, 32, 32, 32),
-            nn.AvgPool2d(kernel_size=3, stride=2, ceil_mode=True),
+            pool(kernel_size=3, stride=2, ceil_mode=True),
             Fire(64, 32, 32, 32),
 
             nn.Conv2d(64, 32, kernel_size=3, stride=2, padding=1),
-            nn.ELU(inplace=True),
+            activation(inplace=True),
             nn.BatchNorm2d(32),
             nn.Dropout2d(p=0.4),
             nn.Conv2d(32, 16, kernel_size=3, stride=2, padding=1),
-            nn.ELU(inplace=True),
+            activation(inplace=True),
             nn.BatchNorm2d(16),
             nn.Dropout2d(p=0.4),
             nn.Conv2d(16, 12, kernel_size=3, stride=2, padding=1),
-            nn.ELU(inplace=True),
+            activation(inplace=True),
             nn.BatchNorm2d(12),
         )
         self.lstm_encoder = nn.ModuleList([
@@ -103,13 +105,13 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
         ])
         self.post_lstm_linear = nn.Sequential(
                                             nn.Linear(32, 24),
-                                            nn.ELU(inplace=True),
+                                            activation(inplace=True),
                                             nn.BatchNorm1d(24),
                                               )
         self.output_linear = nn.Sequential(
                                             nn.Dropout(p=.4),
                                             nn.Linear(24, 16),
-                                            nn.ELU(inplace=True),
+                                            activation(inplace=True),
                                             nn.BatchNorm1d(16),
                                             nn.Linear(16, 2),
                                             nn.Sigmoid()
