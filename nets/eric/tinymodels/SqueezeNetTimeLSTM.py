@@ -12,7 +12,7 @@ logging.basicConfig(filename='training.log', level=logging.DEBUG)
 
 # from Parameters import ARGS
 
-activation = nn.ReLU
+activation = nn.ELU
 pool = nn.MaxPool2d
 
 class Fire(nn.Module):  # pylint: disable=too-few-public-methods

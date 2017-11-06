@@ -6,7 +6,7 @@ from torch.autograd import Variable
 import logging
 logging.basicConfig(filename='training.log', level=logging.DEBUG)
 
-activation = nn.ReLU
+activation = nn.ELU
 pool = nn.MaxPool2d
 
 class Fire(nn.Module):
