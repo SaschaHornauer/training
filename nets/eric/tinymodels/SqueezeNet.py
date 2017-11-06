@@ -7,7 +7,7 @@ import logging
 logging.basicConfig(filename='training.log', level=logging.DEBUG)
 
 activation = nn.ELU
-pool = nn.MaxPool2d
+pool = nn.AvgPool2d
 
 class Fire(nn.Module):
 
