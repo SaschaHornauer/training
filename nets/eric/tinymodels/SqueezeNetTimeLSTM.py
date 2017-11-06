@@ -86,29 +86,29 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
             nn.Conv2d(64, 32, kernel_size=3, stride=2, padding=1),
             nn.ELU(inplace=True),
             nn.BatchNorm2d(32),
-            nn.Dropout2d(p=0.5),
+            nn.Dropout2d(p=0.4),
             nn.Conv2d(32, 16, kernel_size=3, stride=2, padding=1),
             nn.ELU(inplace=True),
             nn.BatchNorm2d(16),
-            nn.Dropout2d(p=0.5),
-            nn.Conv2d(16, 16, kernel_size=3, stride=2, padding=1),
+            nn.Dropout2d(p=0.4),
+            nn.Conv2d(16, 12, kernel_size=3, stride=2, padding=1),
             nn.ELU(inplace=True),
-            nn.BatchNorm2d(16),
+            nn.BatchNorm2d(12),
         )
         self.lstm_encoder = nn.ModuleList([
-            nn.LSTM(32, 64, 1, batch_first=True)
+            nn.LSTM(24, 32, 1, batch_first=True)
         ])
         self.lstm_decoder = nn.ModuleList([
-            nn.LSTM(32, 64, 1, batch_first=True)
+            nn.LSTM(24, 32, 1, batch_first=True)
         ])
         self.post_lstm_linear = nn.Sequential(
-                                            nn.Linear(64, 32),
+                                            nn.Linear(32, 24),
                                             nn.ELU(inplace=True),
-                                            nn.BatchNorm1d(32),
+                                            nn.BatchNorm1d(24),
                                               )
         self.output_linear = nn.Sequential(
-                                            nn.Dropout(p=.5),
-                                            nn.Linear(32, 16),
+                                            nn.Dropout(p=.4),
+                                            nn.Linear(24, 16),
                                             nn.ELU(inplace=True),
                                             nn.BatchNorm1d(16),
                                             nn.Linear(16, 2),
@@ -132,7 +132,7 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
         batch_size = camera_data.size(0)
         net_output = camera_data.contiguous().view(-1, 6, 94, 168)
         net_output = self.pre_lstm_output(net_output)
-        net_output = net_output.contiguous().view(batch_size, -1, 32)
+        net_output = net_output.contiguous().view(batch_size, -1, 24)
         for lstm in self.lstm_encoder:
             net_output, last_hidden_cell = lstm(net_output)
             # last_hidden_cell = list(last_hidden_cell)
@@ -144,7 +144,7 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
         #         net_output = lstm(net_output)[0]
 
         # Initialize the decoder sequence
-        init_input = Variable(torch.ones(batch_size, 1, 32) * 0.5)
+        init_input = Variable(torch.ones(batch_size, 1, 24) * 0.5)
         init_input = init_input.cuda() if self.is_cuda else init_input
         lstm_output, last_hidden_cell = self.lstm_decoder[0](init_input, last_hidden_cell)
         init_input = self.post_lstm_linear(lstm_output.contiguous().squeeze(1)).unsqueeze(1)
@@ -157,7 +157,7 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
                 else:
                     net_output = lstm(net_output)[0]
             # net_output = last_hidden_cell[0]
-            net_output = self.output_linear(self.post_lstm_linear(net_output.contiguous().view(-1, 64)))
+            net_output = self.output_linear(self.post_lstm_linear(net_output.contiguous().view(-1, 32)))
         else:
             list_outputs = []
             list_lstm_inputs = []
@@ -167,7 +167,7 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
                         lstm_output, last_hidden_cell = lstm(init_input, last_hidden_cell)
                     else:
                         lstm_output, last_hidden_cell = lstm(list_lstm_inputs[i-1], last_hidden_cell)
-                    linear = self.post_lstm_linear(lstm_output.contiguous().view(-1, 64))
+                    linear = self.post_lstm_linear(lstm_output.contiguous().view(-1, 32))
                     list_lstm_inputs.append(linear.unsqueeze(1))
                     linear = self.output_linear(linear)
                     list_outputs.append(linear.unsqueeze(1))
