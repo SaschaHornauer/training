@@ -39,9 +39,9 @@
 
   "model": {
     "past_frames": 6,
-    "future_frames": 5,
+    "future_frames": 6,
     "frame_stride": 5,
-    "step_stride": 6  ,
+    "step_stride": 5,
     "save_path": "./save/tinymodels/",
     "resume_path": "./save/tinymodels/"
   },
