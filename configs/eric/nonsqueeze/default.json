@@ -8,7 +8,7 @@
     "partition_cache": "./save/training.cache",
     "start_epoch": 0,
     "num_epochs": 500,
-    "learning_rate": 1e-4,
+    "learning_rate": 1e-3,
     "rand_seed": 123123123,
     "p_exclude_run": 0.0,
     "bias_sampling": false,
@@ -39,9 +39,9 @@
 
   "model": {
     "past_frames": 6,
-    "future_frames": 5,
-    "frame_stride": 2,
-    "step_stride": 6,
+    "future_frames": 6,
+    "frame_stride": 5,
+    "step_stride": 5,
     "save_path": "./save/nonsqueeze/",
     "resume_path": "./save/nonsqueeze/"
   },
