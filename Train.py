@@ -46,16 +46,17 @@ def iterate(net, loss_func, optimizer=None, input=None, truth=None, train=True):
     # Transform inputs into Variables for pytorch and run forward prop
     outputs = net(*input).cuda()
     truth = Variable(truth).cuda()
-    outputs = torch.unbind(outputs, 1)
-    truth = torch.unbind(truth, 1)
-    loss = loss_func(outputs[0], truth[0])
-    for i in range(1, len(truth)):
-        loss += loss_func(outputs[i], truth[i]) * (1. / (len(truth) - 1))
-
-    loss = loss / 2
-
-    outputs = torch.stack(outputs, 1)
-    truth = torch.stack(truth, 1)
+    # outputs = torch.unbind(outputs, 1)
+    # truth = torch.unbind(truth, 1)
+    # loss = loss_func(outputs[0], truth[0])
+    # for i in range(1, len(truth)):
+    #     loss += loss_func(outputs[i], truth[i]) * (1. / (len(truth) - 1))
+    #
+    # loss = loss / 2
+    #
+    # outputs = torch.stack(outputs, 1)
+    # truth = torch.stack(truth, 1)
+    loss = loss_func(outputs, truth)
 
     try:
         if not train:
