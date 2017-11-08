@@ -5,6 +5,11 @@
     "training_loss": "./logs/tinymodels/timelstm_trainloss.log",
     "validation_loss": "./logs/tinymodels/timelstm_valloss.log"
   },
+   "training": {
+    "dataset": {
+      "batch_size": 16
+    }
+  },
 
   "model": {
     "name": "timelstm",

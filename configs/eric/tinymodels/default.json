@@ -15,7 +15,7 @@
     "dataset": {
       "path": "/hostroot/home/ehou/trainingSmallEpochs/training/data/train/",
       "p_subsample": 0.001,
-      "batch_size": 16,
+      "batch_size": 32,
       "shuffle": true,
       "train_ratio": 1.0
     }
