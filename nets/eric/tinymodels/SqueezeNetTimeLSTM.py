@@ -64,6 +64,7 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
             nn.Conv2d(6, 12, kernel_size=3, stride=1, padding=1),
             activation(inplace=True),
             nn.BatchNorm2d(12),
+            nn.Dropout2d(p=0.1),
             nn.Conv2d(12, 16, kernel_size=3, stride=1, padding=1),
             activation(inplace=True),
             nn.BatchNorm2d(16),
@@ -71,7 +72,7 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
             activation(inplace=True),
             nn.BatchNorm2d(16),
             pool(kernel_size=3, stride=2, ceil_mode=True),
-            nn.Dropout2d(p=0.2),
+            # nn.Dropout2d(p=0.2),
 
             Fire(16, 4, 8, 8),
             Fire(16, 12, 12, 12),
@@ -131,24 +132,22 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
     def forward(self, camera_data, metadata, controls=None):
         """Forward-propagates data through SqueezeNetTimeLSTM"""
         batch_size = camera_data.size(0)
-        # camera_data[:] = 0
-        # camera_data[:,:6,:,:] = 1
-        # print camera_data
-        net_output = torch.unbind(camera_data.contiguous().view(batch_size, -1,  6, 94, 168), dim=1)
-        # print net_output[0]
-        # net_output = camera_data.contiguous().view(-1, 6, 94, 168)
 
-        init_input = self.pre_lstm_output(net_output[0]).contiguous().view(batch_size, -1, 24)
+        net_output = camera_data.contiguous().view(-1, 6, 94, 168)
+        net_output = self.pre_lstm_output(net_output)
+        net_output = net_output.contiguous().view(batch_size, -1, 24)
+        for lstm in self.lstm_encoder:
+            lstm_output, last_hidden_cell = lstm(net_output)
 
-        # net_output = self.pre_lstm_output(net_output)
-        # net_output = net_output.contiguous().view(batch_size, -1, 24)
-        last_hidden_cell = None
-        for i in range(1, len(net_output)):
-            for lstm in self.lstm_encoder:
-                lstm_output, last_hidden_cell = lstm(init_input, last_hidden_cell)
-                init_input = self.pre_lstm_output(net_output[i]).contiguous().view(batch_size, -1, 24)
-        lstm_output, last_hidden_cell = lstm(init_input, last_hidden_cell)
-                # last_hidden_cell = list(last_hidden_cell)
+        # net_output = torch.unbind(camera_data.contiguous().view(batch_size, -1,  6, 94, 168), dim=1)
+        # init_input = self.pre_lstm_output(net_output[0]).contiguous().view(batch_size, -1, 24)
+        # last_hidden_cell = None
+        # for i in range(1, len(net_output)):
+        #     for lstm in self.lstm_encoder:
+        #         lstm_output, last_hidden_cell = lstm(init_input, last_hidden_cell)
+        #         init_input = self.pre_lstm_output(net_output[i]).contiguous().view(batch_size, -1, 24)
+        # lstm_output, last_hidden_cell = lstm(init_input, last_hidden_cell)
+
         # for lstm in   self.lstm_decoder:
         #     if last_hidden_cell:
         #         net_output = lstm(self.get_decoder_input(camera_data), last_hidden_cell)[0]
