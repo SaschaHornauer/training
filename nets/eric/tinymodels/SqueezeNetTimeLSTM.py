@@ -131,11 +131,11 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
     def forward(self, camera_data, metadata, controls=None):
         """Forward-propagates data through SqueezeNetTimeLSTM"""
         batch_size = camera_data.size(0)
-        camera_data[:] = 0
-        camera_data[:,:6,:,:] = 1
-        print camera_data
+        # camera_data[:] = 0
+        # camera_data[:,:6,:,:] = 1
+        # print camera_data
         net_output = torch.unbind(camera_data.contiguous().view(batch_size, -1,  6, 94, 168), dim=1)
-        print net_output[0]
+        # print net_output[0]
         # net_output = camera_data.contiguous().view(-1, 6, 94, 168)
 
         init_input = self.pre_lstm_output(net_output[0]).contiguous().view(batch_size, -1, 24)
