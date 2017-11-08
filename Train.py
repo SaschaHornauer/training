@@ -54,6 +54,9 @@ def iterate(net, loss_func, optimizer=None, input=None, truth=None, train=True):
 
     loss = loss / 2
 
+    outputs = torch.stack(outputs, 1)
+    truth = torch.stack(truth, 1)
+
     try:
         if not train:
             if iter_num['i'] % 5 == 0:
