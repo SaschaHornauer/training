@@ -8,7 +8,7 @@
     "partition_cache": "./save/training.cache",
     "start_epoch": 0,
     "num_epochs": 500,
-    "learning_rate": 1e-3,
+    "learning_rate": 1e-4,
     "rand_seed": 123123123,
     "p_exclude_run": 0.0,
     "bias_sampling": false,
@@ -39,9 +39,9 @@
 
   "model": {
     "past_frames": 6,
-    "future_frames": 6,
-    "frame_stride": 5,
-    "step_stride": 5,
+    "future_frames": 3,
+    "frame_stride": 3,
+    "step_stride": 3,
     "save_path": "./save/tinymodels/",
     "resume_path": "./save/tinymodels/"
   },
