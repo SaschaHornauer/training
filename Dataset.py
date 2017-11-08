@@ -257,7 +257,7 @@ class Dataset(data.Dataset):
     def get_val_loader(self, p_subsample=1, seed=None, *args, **kwargs):
         remove_val, val_part = set(), set(self.val_part or self.get_val_partition())
 
-        bias = self.get_biased_sample(val_part, self.cache_file + '.val')
+        bias = self.get_biased_sample(val_part, self.cache_file + '.val', limit=5)
         _ = 0
         random.seed(seed)
         for i in val_part:
@@ -281,7 +281,7 @@ class Dataset(data.Dataset):
             if global_index >= length:
                 return len(self.visible) - idx - 1, global_index - length + 7
 
-    def get_biased_sample(self, partition_set, cache_path=None):
+    def get_biased_sample(self, partition_set, cache_path=None, limit=100):
 
         controls = {}
         control_bins = [[0 for __ in range(0, 16)] for _ in range(0, 16)]
@@ -303,9 +303,9 @@ class Dataset(data.Dataset):
                 _ += 1
 
             num_cache_points = sum([sum(c) for c in control_bins])
-            min_cache_points = min([min([c2 for c2 in c if c2 > 100]) for c in control_bins])
+            min_cache_points = min([min([c2 for c2 in c if c2 > limit]) for c in control_bins])
             class_probs = [[min_cache_points / (c + 1e-32) for c in _] for _ in control_bins]
-            num_sig_bins = sum([sum([1 for c2 in c if c2 > 100]) for c in control_bins])
+            num_sig_bins = sum([sum([1 for c2 in c if c2 > limit]) for c in control_bins])
 
             bias = {'class_probs': class_probs,
                         'controls': controls,
