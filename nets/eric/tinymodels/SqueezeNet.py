@@ -17,7 +17,7 @@ class Fire(nn.Module):
         super(Fire, self).__init__()
         self.final_output = nn.Sequential(
             torch.nn.BatchNorm2d(expand1x1_planes + expand3x3_planes),
-            nn.Dropout2d(p=0.1)
+            nn.Dropout2d(p=0.2)
         )
         self.inplanes = inplanes
         self.squeeze = nn.Conv2d(inplanes, squeeze_planes, kernel_size=1)
@@ -77,11 +77,11 @@ class SqueezeNet(nn.Module):
             nn.Conv2d(64, 48, kernel_size=3, stride=2, padding=1),
             activation(inplace=True),
             nn.BatchNorm2d(48),
-            nn.Dropout2d(p=0.2),
+            nn.Dropout2d(p=0.5),
             nn.Conv2d(48, 32, kernel_size=3, stride=2, padding=1),
             activation(inplace=True),
             nn.BatchNorm2d(32),
-            nn.Dropout2d(p=0.2),
+            nn.Dropout2d(p=0.5),
             nn.Conv2d(32, self.n_steps, kernel_size=3, stride=2, padding=1),
             nn.Sigmoid(),
         )
