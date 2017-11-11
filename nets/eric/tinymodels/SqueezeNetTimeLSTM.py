@@ -34,6 +34,7 @@ class Fire(nn.Module):  # pylint: disable=too-few-public-methods
         self.expand3x3 = nn.Conv2d(squeeze_planes, expand3x3_planes, kernel_size=3, padding=1)
         self.expand3x3_activation = activation(inplace=True)
         self.should_iterate = inplanes == (expand3x3_planes + expand1x1_planes)
+        self.passthrough = nn.Conv2d(inplanes, expand1x1_planes + expand3x3_planes, kernel_size=1)
 
     def forward(self, input_data):
         """Forward-propagates data through Fire module"""
@@ -42,7 +43,7 @@ class Fire(nn.Module):  # pylint: disable=too-few-public-methods
             self.expand1x1_activation(self.expand1x1(output_data)),
             self.expand3x3_activation(self.expand3x3(output_data))
         ], 1)
-        output_data = output_data + input_data if self.should_iterate else output_data
+        output_data = output_data + self.passthrough(input_data)
         output_data = self.final_output(output_data)
         return output_data
 
