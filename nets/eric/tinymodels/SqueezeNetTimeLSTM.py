@@ -133,20 +133,20 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
         """Forward-propagates data through SqueezeNetTimeLSTM"""
         batch_size = camera_data.size(0)
 
-        net_output = camera_data.contiguous().view(-1, 6, 94, 168)
-        net_output = self.pre_lstm_output(net_output)
-        net_output = net_output.contiguous().view(batch_size, -1, 24)
-        for lstm in self.lstm_encoder:
-            lstm_output, last_hidden_cell = lstm(net_output)
+        # net_output = camera_data.contiguous().view(-1, 6, 94, 168)
+        # net_output = self.pre_lstm_output(net_output)
+        # net_output = net_output.contiguous().view(batch_size, -1, 24)
+        # for lstm in self.lstm_encoder:
+        #     lstm_output, last_hidden_cell = lstm(net_output)
 
-        # net_output = torch.unbind(camera_data.contiguous().view(batch_size, -1,  6, 94, 168), dim=1)
-        # init_input = self.pre_lstm_output(net_output[0]).contiguous().view(batch_size, -1, 24)
-        # last_hidden_cell = None
-        # for i in range(1, len(net_output)):
-        #     for lstm in self.lstm_encoder:
-        #         lstm_output, last_hidden_cell = lstm(init_input, last_hidden_cell)
-        #         init_input = self.pre_lstm_output(net_output[i]).contiguous().view(batch_size, -1, 24)
-        # lstm_output, last_hidden_cell = lstm(init_input, last_hidden_cell)
+        net_output = torch.unbind(camera_data.contiguous().view(batch_size, -1,  6, 94, 168), dim=1)
+        init_input = self.pre_lstm_output(net_output[0]).contiguous().view(batch_size, -1, 24)
+        last_hidden_cell = None
+        for i in range(1, len(net_output)):
+            for lstm in self.lstm_encoder:
+                lstm_output, last_hidden_cell = lstm(init_input, last_hidden_cell)
+                init_input = self.pre_lstm_output(net_output[i]).contiguous().view(batch_size, -1, 24)
+        lstm_output, last_hidden_cell = lstm(init_input, last_hidden_cell)
 
         # for lstm in   self.lstm_decoder:
         #     if last_hidden_cell:
