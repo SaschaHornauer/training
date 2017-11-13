@@ -57,11 +57,9 @@ class Feedforward(nn.Module):
             nn.Conv2d(48, 32, kernel_size=3, stride=2, padding=1),
             activation(),
             nn.BatchNorm2d(32),
-            nn.Dropout2d(p=0.5),
             nn.Conv2d(32, 24, kernel_size=3, stride=2, padding=1),
             activation(),
             nn.BatchNorm2d(24),
-            nn.Dropout2d(p=0.5),
             nn.Conv2d(24, self.n_steps, kernel_size=3, stride=2, padding=1),
             nn.Sigmoid()
         )

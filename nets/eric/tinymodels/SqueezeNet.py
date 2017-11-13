@@ -64,7 +64,6 @@ class SqueezeNet(nn.Module):
             activation(inplace=True),
             nn.BatchNorm2d(16),
             pool(kernel_size=3, stride=2, ceil_mode=True),
-            nn.Dropout2d(p=0.5),
 
             Fire(16, 4, 8, 8),
             Fire(16, 12, 12, 12),
@@ -85,7 +84,6 @@ class SqueezeNet(nn.Module):
             nn.Conv2d(48, 32, kernel_size=3, stride=2, padding=1),
             activation(inplace=True),
             nn.BatchNorm2d(32),
-            nn.Dropout2d(p=0.5),
             nn.Conv2d(32, self.n_steps, kernel_size=3, stride=2, padding=1),
             nn.Sigmoid(),
         )
