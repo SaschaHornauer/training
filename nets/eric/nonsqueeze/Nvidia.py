@@ -46,7 +46,7 @@ class Nvidia(nn.Module):
             nn.Sigmoid()
         )
 
-        for mod in self.pre_lstm_output.modules():
+        for mod in self.modules():
             if hasattr(mod, 'weight') and hasattr(mod.weight, 'data'):
                 if isinstance(mod, nn.Conv2d):
                     init.kaiming_normal(mod.weight.data)
