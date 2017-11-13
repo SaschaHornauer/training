@@ -235,11 +235,12 @@ class Dataset(data.Dataset):
     def get_train_loader(self, p_subsample=None, seed=None, *args, **kwargs):
         remove_train, train_part = set(), set(self.train_part or self.get_train_partition())
 
-        bias = self.get_biased_sample(train_part, self.cache_file)
+        # bias = self.get_biased_sample(train_part, self.cache_file)
         _ = 0
         random.seed(seed)
         for i in train_part:
-            if random.random() > bias.get_moment_prob(i, p_subsample):
+            if random.random() > p_subsample:
+                    # bias.get_moment_prob(i, p_subsample):
                 remove_train.add(i)
             if _ % 100000 == 0:
                 print ('Trimming ' + str(_))

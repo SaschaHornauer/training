@@ -34,6 +34,7 @@ class Fire(nn.Module):  # pylint: disable=too-few-public-methods
         self.expand3x3 = nn.Conv2d(squeeze_planes, expand3x3_planes, kernel_size=3, padding=1)
         self.expand3x3_activation = activation(inplace=True)
         self.should_iterate = inplanes == (expand3x3_planes + expand1x1_planes)
+        self.passthrough = nn.Conv2d(inplanes, expand1x1_planes + expand3x3_planes, kernel_size=1)
 
     def forward(self, input_data):
         """Forward-propagates data through Fire module"""
@@ -42,7 +43,7 @@ class Fire(nn.Module):  # pylint: disable=too-few-public-methods
             self.expand1x1_activation(self.expand1x1(output_data)),
             self.expand3x3_activation(self.expand3x3(output_data))
         ], 1)
-        output_data = output_data + input_data if self.should_iterate else output_data
+        output_data = output_data + self.passthrough(input_data)
         output_data = self.final_output(output_data)
         return output_data
 
@@ -133,20 +134,20 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
         """Forward-propagates data through SqueezeNetTimeLSTM"""
         batch_size = camera_data.size(0)
 
-        # net_output = camera_data.contiguous().view(-1, 6, 94, 168)
-        # net_output = self.pre_lstm_output(net_output)
-        # net_output = net_output.contiguous().view(batch_size, -1, 24)
-        # for lstm in self.lstm_encoder:
-        #     lstm_output, last_hidden_cell = lstm(net_output)
+        net_output = camera_data.contiguous().view(-1, 6, 94, 168)
+        net_output = self.pre_lstm_output(net_output)
+        net_output = net_output.contiguous().view(batch_size, -1, 24)
+        for lstm in self.lstm_encoder:
+            lstm_output, last_hidden_cell = lstm(net_output)
 
-        net_output = torch.unbind(camera_data.contiguous().view(batch_size, -1,  6, 94, 168), dim=1)
-        init_input = self.pre_lstm_output(net_output[0]).contiguous().view(batch_size, -1, 24)
-        last_hidden_cell = None
-        for i in range(1, len(net_output)):
-            for lstm in self.lstm_encoder:
-                lstm_output, last_hidden_cell = lstm(init_input, last_hidden_cell)
-                init_input = self.pre_lstm_output(net_output[i]).contiguous().view(batch_size, -1, 24)
-        lstm_output, last_hidden_cell = lstm(init_input, last_hidden_cell)
+        # net_output = torch.unbind(camera_data.contiguous().view(batch_size, -1,  6, 94, 168), dim=1)
+        # init_input = self.pre_lstm_output(net_output[0]).contiguous().view(batch_size, -1, 24)
+        # last_hidden_cell = None
+        # for i in range(1, len(net_output)):
+        #     for lstm in self.lstm_encoder:
+        #         lstm_output, last_hidden_cell = lstm(init_input, last_hidden_cell)
+        #         init_input = self.pre_lstm_output(net_output[i]).contiguous().view(batch_size, -1, 24)
+        # lstm_output, last_hidden_cell = lstm(init_input, last_hidden_cell)
 
         # for lstm in   self.lstm_decoder:
         #     if last_hidden_cell:
@@ -218,7 +219,7 @@ def unit_test():
         Variable(torch.randn(2, 6, 8, 23, 41))
     )
     sizes = [2, 5, 2]
-    print test_net_output.size()
+    print(test_net_output.size())
     assert(all(test_net_output.size(i) == sizes[i] for i in range(len(sizes))))
     logging.debug('Net Test Output = {}'.format(test_net_output))
     logging.debug('Network was Unit Tested')
