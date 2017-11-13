@@ -20,10 +20,10 @@ class Feedforward(nn.Module):
             nn.Conv2d(3 * 2 * n_frames, 16, kernel_size=3, stride=2),
             activation(inplace=True),
             nn.BatchNorm2d(16),
+            nn.Dropout(p=0.1),
             nn.Conv2d(16, 16, kernel_size=3, padding=1),
             activation(inplace=True),
             nn.BatchNorm2d(16),
-            nn.Dropout2d(p=0.2),
         )
         self.post_metadata_features = nn.Sequential(
             nn.Conv2d(16, 24, kernel_size=3, padding=1),
@@ -37,7 +37,7 @@ class Feedforward(nn.Module):
             activation(inplace=True),
             nn.BatchNorm2d(32),
             pool(kernel_size=3, stride=2, ceil_mode=True),
-            nn.Dropout2d(p=0.3),
+            nn.Dropout2d(p=0.5),
         )
         self.pre_final = nn.Sequential(
             nn.Conv2d(32, 32, kernel_size=3, padding=1),
@@ -50,18 +50,18 @@ class Feedforward(nn.Module):
             nn.Conv2d(48, 48, kernel_size=3, padding=1),
             activation(inplace=True),
             nn.BatchNorm2d(48),
-            nn.Dropout2d(p=0.3)
+            nn.Dropout2d(p=0.5)
         )
 
         self.final_output = nn.Sequential(
             nn.Conv2d(48, 32, kernel_size=3, stride=2, padding=1),
             activation(),
             nn.BatchNorm2d(32),
-            nn.Dropout2d(p=0.3),
+            nn.Dropout2d(p=0.5),
             nn.Conv2d(32, 24, kernel_size=3, stride=2, padding=1),
             activation(),
             nn.BatchNorm2d(24),
-            nn.Dropout2d(p=0.3),
+            nn.Dropout2d(p=0.5),
             nn.Conv2d(24, self.n_steps, kernel_size=3, stride=2, padding=1),
             nn.Sigmoid()
         )
