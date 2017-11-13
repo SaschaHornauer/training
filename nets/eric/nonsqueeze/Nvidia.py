@@ -16,25 +16,33 @@ class Nvidia(nn.Module):
         self.conv_nets = nn.Sequential(
             nn.Conv2d(3 * 2 * self.n_frames, 24, kernel_size=5, stride=2),
             nn.ReLU(),
+            nn.BatchNorm2d(24),
             nn.Conv2d(24, 36, kernel_size=5, stride=2),
             nn.ReLU(),
+            nn.BatchNorm2d(36),
             nn.Conv2d(36, 48, kernel_size=5, stride=2),
             nn.ReLU(),
+            nn.BatchNorm2d(48),
             nn.Dropout2d(0.5),
             nn.Conv2d(48, 64, kernel_size=3, stride=2),
             nn.ReLU(),
+            nn.BatchNorm2d(64),
             nn.Conv2d(64, 64, kernel_size=3, stride=1),
-            nn.ReLU()
+            nn.ReLU(),
+            nn.BatchNorm2d(64),
         )
         self.fcl = nn.Sequential(
             nn.Dropout(0.5),
             nn.Linear(768, 250),
             nn.ReLU(),
+            nn.BatchNorm1d(250),
             nn.Dropout(p=0.5),
             nn.Linear(250, 100),
             nn.ReLU(),
+            nn.BatchNorm1d(100),
             nn.Dropout(p=0.5),
             nn.Linear(100, 2 * self.n_steps),
+            nn.BatchNorm1d(2 * self.n_steps),
             nn.Sigmoid()
         )
 
