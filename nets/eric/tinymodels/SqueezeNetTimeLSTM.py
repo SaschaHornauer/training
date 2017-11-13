@@ -34,7 +34,10 @@ class Fire(nn.Module):  # pylint: disable=too-few-public-methods
         self.expand3x3 = nn.Conv2d(squeeze_planes, expand3x3_planes, kernel_size=3, padding=1)
         self.expand3x3_activation = activation(inplace=True)
         self.should_iterate = inplanes == (expand3x3_planes + expand1x1_planes)
-        self.passthrough = nn.Conv2d(inplanes, expand1x1_planes + expand3x3_planes, kernel_size=1)
+        self.passthrough = nn.Sequential(
+            nn.Conv2d(inplanes, expand1x1_planes + expand3x3_planes, kernel_size=1),
+            activation(inplace=True)
+        )
 
     def forward(self, input_data):
         """Forward-propagates data through Fire module"""
@@ -65,7 +68,7 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
             nn.Conv2d(6, 12, kernel_size=3, stride=1, padding=1),
             activation(inplace=True),
             nn.BatchNorm2d(12),
-            nn.Dropout2d(p=0.1),
+            nn.Dropout(p=0.1),
             nn.Conv2d(12, 16, kernel_size=3, stride=1, padding=1),
             activation(inplace=True),
             nn.BatchNorm2d(16),
@@ -81,7 +84,7 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
             pool(kernel_size=3, stride=2, ceil_mode=True),
             Fire(32, 16, 16, 16),
             Fire(32, 24, 24, 24),
-            # nn.Dropout2d(0.2),
+            nn.Dropout2d(0.25),
             Fire(48, 24, 24, 24),
             Fire(48, 32, 32, 32),
             pool(kernel_size=3, stride=2, ceil_mode=True),
@@ -111,6 +114,7 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
                                             nn.BatchNorm1d(24),
                                               )
         self.output_linear = nn.Sequential(
+                                            nn.Dropout(p=0.5),
                                             nn.Linear(24, 16),
                                             activation(inplace=True),
                                             nn.BatchNorm1d(16),
