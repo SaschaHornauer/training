@@ -138,7 +138,6 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
 
         net_output = camera_data.contiguous().view(-1, 6, 94, 168)
         net_output = self.pre_lstm_output(net_output)
-        print net_output.size()
         net_output = net_output.contiguous().view(batch_size, -1, 24)
         for lstm in self.lstm_encoder:
             lstm_output, last_hidden_cell = lstm(net_output)

@@ -21,7 +21,7 @@ class Feedforward(nn.Module):
             activation(inplace=True),
             nn.BatchNorm2d(16),
             nn.Dropout(p=0.1),
-            nn.Conv2d(16, 16, kernel_size=3, padding=1),
+            nn.Conv2d(16, 16,  kernel_size=3, padding=1),
             activation(inplace=True),
             nn.BatchNorm2d(16),
         )
@@ -72,8 +72,8 @@ class Feedforward(nn.Module):
                     init.xavier_uniform(mod.weight.data)
                 else:
                     init.normal(mod.weight.data)
-            if hasattr(mod, 'bias') and hasattr(mod.bias, 'data'):
-                init.normal(mod.bias.data, 0.0001)
+            # if hasattr(mod, 'bias') and hasattr(mod.bias, 'data'):
+            #     init.normal(mod.bias.data, 0.0001)
 
     def forward(self, x, metadata):
         x = self.pre_metadata_features(x)

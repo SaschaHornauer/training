@@ -19,7 +19,6 @@ class Nvidia(nn.Module):
             nn.BatchNorm2d(24),
             nn.Conv2d(24, 36, kernel_size=5, stride=2),
             nn.ReLU(),
-            nn.BatchNorm2d(36),
             nn.Conv2d(36, 48, kernel_size=5, stride=2),
             nn.ReLU(),
             nn.BatchNorm2d(48),
@@ -42,7 +41,6 @@ class Nvidia(nn.Module):
             nn.BatchNorm1d(100),
             nn.Dropout(p=0.5),
             nn.Linear(100, 2 * self.n_steps),
-            nn.BatchNorm1d(2 * self.n_steps),
             nn.Sigmoid()
         )
 
