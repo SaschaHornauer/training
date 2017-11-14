@@ -110,10 +110,6 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
                                             nn.Linear(32, 24),
                                             activation(inplace=True),
                                             nn.BatchNorm1d(24),
-                                            nn.Dropout(p=0.5),
-                                            nn.Linear(24, 24),
-                                            activation(inplace=True),
-                                            nn.BatchNorm1d(24),
                                             )
         self.output_linear = nn.Sequential(
                                             nn.Linear(24, 16),
