@@ -37,7 +37,7 @@ class Feedforward(nn.Module):
             activation(inplace=True),
             nn.BatchNorm2d(32),
             pool(kernel_size=3, stride=2, ceil_mode=True),
-            nn.Dropout2d(p=0.5),
+            nn.Dropout2d(p=0.2),
         )
         self.pre_final = nn.Sequential(
             nn.Conv2d(32, 32, kernel_size=3, padding=1),
@@ -50,7 +50,7 @@ class Feedforward(nn.Module):
             nn.Conv2d(48, 48, kernel_size=3, padding=1),
             activation(inplace=True),
             nn.BatchNorm2d(48),
-            nn.Dropout2d(p=0.5)
+            nn.Dropout2d(p=0.2)
         )
 
         self.final_output = nn.Sequential(
