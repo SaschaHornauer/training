@@ -83,7 +83,6 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
             pool(kernel_size=3, stride=2, ceil_mode=True),
             Fire(32, 16, 16, 16),
             Fire(32, 24, 24, 24),
-            nn.Dropout2d(0.5),
             Fire(48, 24, 24, 24),
             Fire(48, 32, 32, 32),
             pool(kernel_size=3, stride=2, ceil_mode=True),
