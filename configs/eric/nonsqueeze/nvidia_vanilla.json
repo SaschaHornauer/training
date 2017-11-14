@@ -1,0 +1,15 @@
+{
+  "parent_config": "eric/nonsqueeze/default.json",
+  "logging": {
+    "path": "nvidia_vanilla_training.log",
+    "training_loss": "./logs/nonsqueeze/nvidia_vanilla_trainloss.log",
+    "validation_loss": "./logs/nonsqueeze/nvidia_vanilla_valloss.log"
+  },
+
+  "model": {
+    "name": "nvidia_vanilla",
+    "py_path": "nets.eric.nonsqueeze.NvidiaVanilla",
+    "separate_frames": true,
+    "metadata_shape": [6, 8, 23, 41]
+  }
+}
