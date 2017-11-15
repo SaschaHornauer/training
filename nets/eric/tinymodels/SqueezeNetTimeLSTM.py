@@ -24,7 +24,7 @@ class Fire(nn.Module):  # pylint: disable=too-few-public-methods
         super(Fire, self).__init__()
         self.final_output = nn.Sequential(
             torch.nn.BatchNorm2d(expand1x1_planes + expand3x3_planes),
-            nn.Dropout2d(p=0.2)
+            nn.Dropout2d(p=0.1)
         )
         self.inplanes = inplanes
         self.squeeze = nn.Conv2d(inplanes, squeeze_planes, kernel_size=1)
@@ -33,11 +33,11 @@ class Fire(nn.Module):  # pylint: disable=too-few-public-methods
         self.expand1x1_activation = activation(inplace=True)
         self.expand3x3 = nn.Conv2d(squeeze_planes, expand3x3_planes, kernel_size=3, padding=1)
         self.expand3x3_activation = activation(inplace=True)
-        self.should_iterate = inplanes == (expand3x3_planes + expand1x1_planes)
-        self.passthrough = nn.Sequential(
-            nn.Conv2d(inplanes, expand1x1_planes + expand3x3_planes, kernel_size=1),
-            activation(inplace=True)
-        )
+        # self.should_iterate = inplanes == (expand3x3_planes + expand1x1_planes)
+        # self.passthrough = nn.Sequential(
+        #     nn.Conv2d(inplanes, expand1x1_planes + expand3x3_planes, kernel_size=1),
+        #     activation(inplace=True)
+        # )
 
     def forward(self, input_data):
         """Forward-propagates data through Fire module"""
@@ -46,7 +46,8 @@ class Fire(nn.Module):  # pylint: disable=too-few-public-methods
             self.expand1x1_activation(self.expand1x1(output_data)),
             self.expand3x3_activation(self.expand3x3(output_data))
         ], 1)
-        output_data = output_data + self.passthrough(input_data)
+        output_data = output_data \
+                      # + self.passthrough(input_data)
         output_data = self.final_output(output_data)
         return output_data
 
@@ -83,7 +84,7 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
             pool(kernel_size=3, stride=2, ceil_mode=True),
             Fire(32, 16, 16, 16),
             Fire(32, 24, 24, 24),
-            nn.Dropout2d(p=0.5),
+            nn.Dropout2d(p=0.3),
             Fire(48, 24, 24, 24),
             Fire(48, 32, 32, 32),
             pool(kernel_size=3, stride=2, ceil_mode=True),
@@ -96,27 +97,24 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
             activation(inplace=True),
             nn.BatchNorm2d(16),
             # nn.Dropout2d(p=0.2),
-            nn.Conv2d(16, 12, kernel_size=3, stride=2, padding=1),
+            nn.Conv2d(16, 16, kernel_size=3, stride=2, padding=1),
             activation(inplace=True),
-            nn.BatchNorm2d(12),
+            nn.BatchNorm2d(16),
         )
         self.lstm_encoder = nn.ModuleList([
-            nn.LSTM(24, 32, 1, batch_first=True)
+            nn.LSTM(32, 64, 1, batch_first=True)
         ])
         self.lstm_decoder = nn.ModuleList([
-            nn.LSTM(24, 32, 1, batch_first=True)
+            nn.LSTM(24, 64, 1, batch_first=True)
         ])
         self.post_lstm_linear = nn.Sequential(
-                                            nn.Linear(32, 24),
+                                            nn.Linear(64, 24),
                                             activation(inplace=True),
                                             nn.BatchNorm1d(24),
                                             )
         self.output_linear = nn.Sequential(
-                                            nn.Dropout(p=0.5),
-                                            nn.Linear(24, 16),
-                                            activation(inplace=True),
-                                            nn.BatchNorm1d(16),
-                                            nn.Linear(16, 2),
+                                            nn.Dropout(p=0.2),
+                                            nn.Linear(24, 2),
                                             nn.Sigmoid()
                                            )
 
@@ -138,7 +136,7 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
 
         net_output = camera_data.contiguous().view(-1, 6, 94, 168)
         net_output = self.pre_lstm_output(net_output)
-        net_output = net_output.contiguous().view(batch_size, -1, 24)
+        net_output = net_output.contiguous().view(batch_size, -1, 32)
         for lstm in self.lstm_encoder:
             lstm_output, last_hidden_cell = lstm(net_output)
 
@@ -172,7 +170,7 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
                 else:
                     net_output = lstm(net_output)[0]
             # net_output = last_hidden_cell[0]
-            net_output = self.output_linear(self.post_lstm_linear(net_output.contiguous().view(-1, 32)))
+            net_output = self.output_linear(self.post_lstm_linear(net_output.contiguous().view(-1, 64)))
         else:
             list_outputs = []
             list_lstm_inputs = []
@@ -182,7 +180,7 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
                         lstm_output, last_hidden_cell = lstm(init_input, last_hidden_cell)
                     else:
                         lstm_output, last_hidden_cell = lstm(list_lstm_inputs[i-1], last_hidden_cell)
-                    linear = self.post_lstm_linear(lstm_output.contiguous().view(-1, 32))
+                    linear = self.post_lstm_linear(lstm_output.contiguous().view(-1, 64))
                     list_lstm_inputs.append(linear.unsqueeze(1))
                     linear = self.output_linear(linear)
                     list_outputs.append(linear.unsqueeze(1))

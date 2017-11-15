@@ -17,7 +17,7 @@ class Fire(nn.Module):
         super(Fire, self).__init__()
         self.final_output = nn.Sequential(
             torch.nn.BatchNorm2d(expand1x1_planes + expand3x3_planes),
-            nn.Dropout2d(p=0.2)
+            nn.Dropout2d(p=0.1)
         )
         self.inplanes = inplanes
         self.squeeze = nn.Conv2d(inplanes, squeeze_planes, kernel_size=1)
@@ -26,11 +26,11 @@ class Fire(nn.Module):
         self.expand1x1_activation = activation(inplace=True)
         self.expand3x3 = nn.Conv2d(squeeze_planes, expand3x3_planes, kernel_size=3, padding=1)
         self.expand3x3_activation = activation(inplace=True)
-        self.should_iterate = inplanes == (expand3x3_planes + expand1x1_planes)
-        self.passthrough = nn.Sequential(
-            nn.Conv2d(inplanes, expand1x1_planes + expand3x3_planes, kernel_size=1),
-            activation(inplace=True)
-        )
+        # self.should_iterate = inplanes == (expand3x3_planes + expand1x1_planes)
+        # self.passthrough = nn.Sequential(
+        #     nn.Conv2d(inplanes, expand1x1_planes + expand3x3_planes, kernel_size=1),
+        #     activation(inplace=True)
+        # )
 
     def forward(self, input_data):
         """Forward-propagates data through Fire module"""
@@ -39,7 +39,8 @@ class Fire(nn.Module):
             self.expand1x1_activation(self.expand1x1(output_data)),
             self.expand3x3_activation(self.expand3x3(output_data))
         ], 1)
-        output_data = output_data + self.passthrough(input_data)
+        output_data = output_data \
+                      # + self.passthrough(input_data)
         output_data = self.final_output(output_data)
         return output_data
 
@@ -65,21 +66,19 @@ class SqueezeNet(nn.Module):
             nn.BatchNorm2d(16),
             pool(kernel_size=3, stride=2, ceil_mode=True),
 
-            nn.Dropout2d(p=0.2),
-
             Fire(16, 4, 8, 8),
             Fire(16, 12, 12, 12),
             Fire(24, 16, 16, 16),
             pool(kernel_size=3, stride=2, ceil_mode=True),
             Fire(32, 16, 16, 16),
             Fire(32, 24, 24, 24),
-            nn.Dropout2d(p=0.5),
+            nn.Dropout2d(p=0.3),
             Fire(48, 24, 24, 24),
             Fire(48, 32, 32, 32),
             pool(kernel_size=3, stride=2, ceil_mode=True),
             Fire(64, 32, 32, 32),
 
-            nn.Dropout2d(p=0.5),
+            nn.Dropout2d(p=0.3),
 
             nn.Conv2d(64, 48, kernel_size=3, stride=2, padding=1),
             activation(inplace=True),
