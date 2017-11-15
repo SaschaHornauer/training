@@ -13,7 +13,7 @@ logging.basicConfig(filename='training.log', level=logging.DEBUG)
 # from Parameters import ARGS
 
 activation = nn.ELU
-pool = nn.MaxPool2d
+pool = nn.AvgPool2d
 
 class Fire(nn.Module):  # pylint: disable=too-few-public-methods
     """Implementation of Fire module"""
@@ -24,7 +24,7 @@ class Fire(nn.Module):  # pylint: disable=too-few-public-methods
         super(Fire, self).__init__()
         self.final_output = nn.Sequential(
             torch.nn.BatchNorm2d(expand1x1_planes + expand3x3_planes),
-            nn.Dropout2d(p=0.1)
+            # nn.Dropout2d(p=0.1)
         )
         self.inplanes = inplanes
         self.squeeze = nn.Conv2d(inplanes, squeeze_planes, kernel_size=1)
@@ -69,7 +69,6 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
             nn.Conv2d(6, 12, kernel_size=3, stride=1, padding=1),
             activation(inplace=True),
             nn.BatchNorm2d(12),
-            nn.Dropout(p=0.1),
             nn.Conv2d(12, 16, kernel_size=3, stride=1, padding=1),
             activation(inplace=True),
             nn.BatchNorm2d(16),
@@ -84,7 +83,7 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
             pool(kernel_size=3, stride=2, ceil_mode=True),
             Fire(32, 16, 16, 16),
             Fire(32, 24, 24, 24),
-            nn.Dropout2d(p=0.3),
+            nn.Dropout(p=0.5),
             Fire(48, 24, 24, 24),
             Fire(48, 32, 32, 32),
             pool(kernel_size=3, stride=2, ceil_mode=True),
@@ -113,7 +112,6 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
                                             nn.BatchNorm1d(24),
                                             )
         self.output_linear = nn.Sequential(
-                                            nn.Dropout(p=0.2),
                                             nn.Linear(24, 2),
                                             nn.Sigmoid()
                                            )

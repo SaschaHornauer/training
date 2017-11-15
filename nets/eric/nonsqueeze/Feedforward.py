@@ -6,8 +6,8 @@ from torch.autograd import Variable
 import logging
 logging.basicConfig(filename='training.log', level=logging.DEBUG)
 
-activation = nn.ReLU
-pool = nn.MaxPool2d
+activation = nn.ELU
+pool = nn.AvgPool2d
 
 class Feedforward(nn.Module):
 
