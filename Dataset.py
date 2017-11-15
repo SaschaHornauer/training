@@ -171,13 +171,14 @@ class Dataset(data.Dataset):
 
         print(t)
 
-        for _ in range(t-1, t + self.nframes * self.frame_stride - 1, self.frame_stride):
+        for i in range(0, self.nframes * self.frame_stride, self.frame_stride):
             for camera in ('left', 'right'):
-                list_camera_input.append(torch.from_numpy(data_file[camera][_]))
-                camera_data = torch.cat(list_camera_input, 2)
-                camera_data = camera_data.cuda().float() / 255. - 0.5
-                camera_data = torch.transpose(camera_data, 0, 2)
-                camera_data = torch.transpose(camera_data, 1, 2)
+                list_camera_input.append(torch.from_numpy(data_file[camera][t + i - 1]))
+
+        camera_data = torch.cat(list_camera_input, 2)
+        camera_data = camera_data.cuda().float() / 255. - 0.5
+        camera_data = torch.transpose(camera_data, 0, 2)
+        camera_data = torch.transpose(camera_data, 1, 2)
 
         # Get behavioral mode
         metadata_raw = self.run_files[run_idx]['run_labels']
