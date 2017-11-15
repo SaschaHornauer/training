@@ -107,6 +107,8 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
             nn.LSTM(1, 64, 1, batch_first=True)
         ])
         self.output_linear = nn.Sequential(
+                                            nn.BatchNorm1d(64),
+                                            nn.Dropout(p=0.25),
                                             nn.Linear(64, 24),
                                             activation(inplace=True),
                                             nn.BatchNorm1d(24),
@@ -136,8 +138,11 @@ class SqueezeNetTimeLSTM(nn.Module):  # pylint: disable=too-few-public-methods
         for lstm in self.lstm_encoder:
             lstm_output, last_hidden_cell = lstm(net_output)
         for lstm in self.lstm_decoder:
-            net_output = lstm(self.get_decoder_input(camera_data), last_hidden_cell)[0]
-            last_hidden_cell = None
+            if last_hidden_cell:
+                net_output = lstm(self.get_decoder_input(camera_data), last_hidden_cell)[0]
+                last_hidden_cell = None
+            else:
+                net_output = lstm(net_output)[0]
 
         # net_output = torch.unbind(camera_data.contiguous().view(batch_size, -1,  6, 94, 168), dim=1)
         # init_input = self.pre_lstm_output(net_output[0]).contiguous().view(batch_size, -1, 24)
