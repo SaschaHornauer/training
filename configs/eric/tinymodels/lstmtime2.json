@@ -1,19 +1,14 @@
 {
   "parent_config": "eric/tinymodels/default.json",
   "logging": {
-    "path": "timelstm32_training.log",
-    "training_loss": "./logs/tinymodels/timelstm32_trainloss.log",
-    "validation_loss": "./logs/tinymodels/timelstm32_valloss.log"
-  },
-   "training": {
-    "dataset": {
-      "batch_size": 32
-    }
+    "path": "timelstm2_training.log",
+    "training_loss": "./logs/tinymodels/timelstm2_trainloss.log",
+    "validation_loss": "./logs/tinymodels/timelstm2_valloss.log"
   },
 
   "model": {
-    "name": "timelstm32",
-    "py_path": "nets.eric.tinymodels.SqueezeNetTimeLSTM",
+    "name": "timelstm2",
+    "py_path": "nets.eric.tinymodels.SqueezeNetTimeLSTM2",
     "separate_frames": true,
     "metadata_shape": [6, 8, 23, 41]
   }
