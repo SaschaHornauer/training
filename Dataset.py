@@ -139,7 +139,7 @@ class Dataset(data.Dataset):
                 # for debugging indexing problems and gives very little slowdown
                 self.invisible.append(self.full_length + 7) # actual indicies mapped
 
-                self.total_length += (length - (self.nsteps * stride - 1) - 7)
+                self.total_length += (length - (self.nsteps * stride + self.nframes * frame_stride - 1) - 7)
                 self.full_length += length
 
         # Create row gradient
@@ -168,8 +168,6 @@ class Dataset(data.Dataset):
         metadata_file = self.run_files[run_idx]['metadata']
 
         list_camera_input = []
-
-        print(t)
 
         for i in range(0, self.nframes * self.frame_stride, self.frame_stride):
             for camera in ('left', 'right'):
