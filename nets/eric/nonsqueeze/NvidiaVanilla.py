@@ -38,6 +38,16 @@ class Nvidia(nn.Module):
             nn.Sigmoid()
         )
 
+        for mod in self.modules():
+            if hasattr(mod, 'weight') and hasattr(mod.weight, 'data'):
+                if isinstance(mod, nn.Conv2d):
+                    init.kaiming_normal(mod.weight.data)
+                elif len(mod.weight.data.size()) >= 2:
+                    init.xavier_normal(mod.weight.data)
+                else:
+                    init.normal(mod.weight.data)
+
+
     def forward(self, x, metadata):
         x = self.conv_nets(x)
         x = x.view(x.size(0), -1)
