@@ -9,6 +9,7 @@
     "name": "ns_timelstm",
     "py_path": "nets.eric.nonsqueeze.TimeLSTM",
     "separate_frames": true,
-    "metadata_shape": [6, 8, 23, 41]
+    "metadata_shape": [6, 8, 23, 41],
+    "accepts_prev_controls": true
   }
 }

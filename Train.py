@@ -142,12 +142,16 @@ def main():
             train_loss = Utils.LossLog()
             start = time.time()
 
-            for batch_idx, (camera, meta, truth) in enumerate(train_data_loader):
+            for batch_idx, (camera, meta, truth, prev_controls) in enumerate(train_data_loader):
                 # Cuda everything
-                camera, meta, truth = camera.cuda(), meta.cuda(), truth.cuda()
+                camera, meta, truth, prev_controls = camera.cuda(), meta.cuda(), truth.cuda(), prev_controls.cuda()
+
+                input = [camera, meta]
+                if config['model']['accepts_prev_controls']:
+                    input.append(prev_controls)
 
                 loss = iterate(net, loss_func=loss_func, optimizer=optimizer,
-                               input=(camera, meta), truth=truth)
+                               input=input, truth=truth)
 
                 # Logging Loss
                 train_loss.add(loss)
@@ -191,11 +195,15 @@ def main():
 
             net.eval()
 
-            for batch_idx, (camera, meta, truth) in enumerate(val_data_loader):
+            for batch_idx, (camera, meta, truth, prev_controls) in enumerate(val_data_loader):
                 # Cuda everything
-                camera, meta, truth = camera.cuda(), meta.cuda(), truth.cuda()
+                camera, meta, truth, prev_controls = camera.cuda(), meta.cuda(), truth.cuda(), prev_controls.cuda()
 
-                loss = iterate(net, loss_func=loss_func, truth=truth, input=(camera, meta), train=False)
+                input = [camera, meta]
+                if config['model']['accepts_prev_controls']:
+                    input.append(prev_controls)
+
+                loss = iterate(net, loss_func=loss_func, truth=truth, input=input, train=False)
 
                 # Logging Loss
                 val_loss.add(loss)

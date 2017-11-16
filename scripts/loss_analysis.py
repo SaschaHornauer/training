@@ -15,7 +15,7 @@ loss_ratios = [losses[i+1] / (losses[i] + 1e-30) for i in range(len(losses) - 1)
 r = reduce(lambda a, b: a * b, loss_ratios[:min_loss_index-1], 1.) ** (1. / (min_loss_index - 1))
 sigma_r = math.e ** (math.sqrt(sum([math.log(r_hat / r) ** 2 for r_hat in loss_ratios[:min_loss_index-1]])) / (min_loss_index-2))
 r_div = reduce(lambda a, b: a * b, loss_ratios[min_loss_index:], 1.) ** (1. / (len(loss_ratios)-min_loss_index))
-sigma_r_div = math.e ** (math.sqrt(sum([math.log(r_div_hat / r) ** 2 for r_div_hat in loss_ratios[min_loss_index:]])) / (len(loss_ratios) - min_loss_index - 1))
+sigma_r_div = math.e ** (math.sqrt(sum([math.log(r_div_hat / (r + 1e-30)) ** 2 for r_div_hat in loss_ratios[min_loss_index:]])) / (len(loss_ratios) - min_loss_index - 1))
 
 print('Min loss: {} at index {}'.format(min_loss, min_loss_index))
 print('Geometric average of convergence rate: {}'.format(r ** 4))

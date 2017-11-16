@@ -168,10 +168,15 @@ class Dataset(data.Dataset):
         metadata_file = self.run_files[run_idx]['metadata']
 
         list_camera_input = []
+        previous_controls = []
 
         for i in range(0, self.nframes * self.frame_stride, self.frame_stride):
             for camera in ('left', 'right'):
                 list_camera_input.append(torch.from_numpy(data_file[camera][t + i - 1]))
+                previous_controls.append(float(self.run_files[run_idx]['metadata']['steer'][t + i - 1]))
+                previous_controls.append(float(self.run_files[run_idx]['metadata']['motor'][t + i - 1]))
+
+        previous_controls = torch.FloatTensor(previous_controls) / 99.
 
         camera_data = torch.cat(list_camera_input, 2)
         camera_data = camera_data.cuda().float() / 255. - 0.5
@@ -192,14 +197,15 @@ class Dataset(data.Dataset):
 
         # Get Ground Truth
         controls = []
+        forward_constant = self.nframes * self.frame_stride
 
         for i in range(0, self.stride * self.nsteps, self.stride):
-            controls.append([float(self.run_files[run_idx]['metadata']['steer'][t + i]),
-                             float(self.run_files[run_idx]['metadata']['motor'][t + i])])
+            controls.append([float(self.run_files[run_idx]['metadata']['steer'][t + forward_constant + i]),
+                             float(self.run_files[run_idx]['metadata']['motor'][t + forward_constant + i])])
 
         final_ground_truth = torch.FloatTensor(controls) / 99.
 
-        return camera_data, metadata, final_ground_truth
+        return camera_data, metadata, final_ground_truth, previous_controls
 
     def __len__(self):
         if self.max_len == -1:
