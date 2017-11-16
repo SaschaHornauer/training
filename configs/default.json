@@ -49,7 +49,8 @@
     "step_stride": 10,
     "separate_frames": false,
     "metadata_shape": [128, 23, 41],
-    "load_epoch": 0
+    "load_epoch": 0,
+    "accepts_prev_controls": false
   },
 
   "dataset": {
