@@ -171,10 +171,11 @@ class Dataset(data.Dataset):
         previous_controls = []
 
         for i in range(0, self.nframes * self.frame_stride, self.frame_stride):
+            previous_controls.append(float(self.run_files[run_idx]['metadata']['steer'][t + i - 1]))
+            previous_controls.append(float(self.run_files[run_idx]['metadata']['motor'][t + i - 1]))
             for camera in ('left', 'right'):
                 list_camera_input.append(torch.from_numpy(data_file[camera][t + i - 1]))
-                previous_controls.append(float(self.run_files[run_idx]['metadata']['steer'][t + i - 1]))
-                previous_controls.append(float(self.run_files[run_idx]['metadata']['motor'][t + i - 1]))
+
 
         previous_controls = torch.FloatTensor(previous_controls) / 99.
 
