@@ -43,7 +43,8 @@
     "frame_stride": 3,
     "step_stride": 3,
     "save_path": "./save/discrete/",
-    "resume_path": "./save/discrete/"
+    "resume_path": "./save/discrete/",
+    "accepts_prev_controls": false
   },
 
   "dataset": {

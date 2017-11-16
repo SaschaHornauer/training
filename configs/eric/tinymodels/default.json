@@ -43,7 +43,8 @@
     "frame_stride": 3,
     "step_stride": 3,
     "save_path": "./save/tinymodels/",
-    "resume_path": "./save/tinymodels/"
+    "resume_path": "./save/tinymodels/",
+    "accepts_prev_controls": false
   },
 
   "dataset": {
