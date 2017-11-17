@@ -34,7 +34,7 @@
 
   "hardware": {
     "use_gpu": true,
-    "gpu": 0
+    "gpu": 1
   },
 
   "model": {
@@ -42,10 +42,9 @@
     "future_frames": 10,
     "frame_stride": 3,
     "step_stride": 3,
-    "save_path": "./save/nonsqueeze/",
-    "resume_path": "./save/nonsqueeze/",
+    "save_path": "./save/models/",
+    "resume_path": "./save/models/",
     "accepts_prev_controls": false
-
   },
 
   "dataset": {

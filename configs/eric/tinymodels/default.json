@@ -34,7 +34,7 @@
 
   "hardware": {
     "use_gpu": true,
-    "gpu": 0
+    "gpu": 1
   },
 
   "model": {

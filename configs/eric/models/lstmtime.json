@@ -1,0 +1,16 @@
+{
+  "parent_config": "eric/models/default.json",
+  "logging": {
+    "path": "timelstm_training.log",
+    "training_loss": "./logs/models/timelstm_trainloss.log",
+    "validation_loss": "./logs/models/timelstm_valloss.log"
+  },
+
+  "model": {
+    "name": "timelstm",
+    "py_path": "nets.eric.models.SqueezeNetTimeLSTM",
+    "separate_frames": true,
+    "metadata_shape": [6, 8, 23, 41],
+    "accepts_prev_controls": true
+  }
+}
