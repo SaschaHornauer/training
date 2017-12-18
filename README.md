@@ -26,3 +26,5 @@ Save files are managed by the Git LFS system, any file that ends with .infer or 
 4. `source ~/.bashrc`
 5. Work normally
 6. If you want to download GIT LFS files rather than having pointers than you can run `git lfs pull`
+
+
