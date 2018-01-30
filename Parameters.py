@@ -7,6 +7,7 @@ parser = argparse.ArgumentParser(  # pylint: disable=invalid-name
     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
 parser.add_argument('--gpu', default=0, type=int, help='Cuda GPU ID')
+parser.add_argument('--no-gpu', dest='no_gpu', action='store_true')
 parser.add_argument('--batch-size', default=100, type=int)
 parser.add_argument('--display', dest='display', action='store_true')
 parser.add_argument('--no-display', dest='display', action='store_false')
@@ -23,6 +24,7 @@ parser.add_argument('--bkup', default=None, type=str, help='Path to' +
                     ' resume file containing network state dictionary')
 parser.add_argument('--save-path', default='save', type=str, help='Path to' +
                     ' folder to save net state dictionaries.')
+
 
 # nargs='+' allows for multiple arguments and stores arguments in a list
 parser.add_argument(

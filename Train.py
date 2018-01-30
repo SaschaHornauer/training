@@ -19,10 +19,18 @@ def main():
 
     # Set Up PyTorch Environment
     # torch.set_default_tensor_type('torch.FloatTensor')
-    torch.cuda.set_device(ARGS.gpu)
-    torch.cuda.device(ARGS.gpu)
+    
+    print ARGS.no_gpu
+    
+    if not ARGS.no_gpu:
+        torch.cuda.set_device(ARGS.gpu)
+        torch.cuda.device(ARGS.gpu)
 
-    net = SqueezeNet().cuda()
+    if not ARGS.no_gpu:
+        net = SqueezeNet().cuda()
+    else:
+        net = SqueezeNet()
+    
     criterion = torch.nn.MSELoss().cuda()
     optimizer = torch.optim.Adadelta(net.parameters())
 
