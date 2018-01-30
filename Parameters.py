@@ -7,6 +7,7 @@ parser = argparse.ArgumentParser(  # pylint: disable=invalid-name
     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
 parser.add_argument('--gpu', default=-1, type=int, help='Cuda GPU ID')
+parser.add_argument('--no-gpu', dest='no_gpu', action='store_true')
 parser.add_argument('--epoch', default=0, type=int, help='Cuda GPU ID')
 parser.add_argument('--batch-size', default=100, type=int)
 parser.add_argument('--display', dest='display', action='store_true')
