@@ -34,7 +34,7 @@
   },
 
   "hardware": {
-    "use_gpu": true,
+    "use_gpu": false,
     "gpu": 0
   },
 
